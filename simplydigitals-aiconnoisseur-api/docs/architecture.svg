@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 820">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    svg { font-family: system-ui, sans-serif; background: #ffffff; }
+    .th { font-size: 14px; font-weight: 500; fill: #1a1a1a; }
+    .ts { font-size: 12px; font-weight: 400; fill: #555550; }
+    .arr { stroke: #888780; stroke-width: 1.5; fill: none; }
+    .leader { stroke: #888780; stroke-width: 0.5; stroke-dasharray: 4 3; fill: none; }
+
+    /* c-gray */
+    .c-gray rect, .c-gray circle, .c-gray ellipse { fill: #F1EFE8; stroke: #5F5E5A; }
+    .c-gray .th { fill: #444441; }
+    .c-gray .ts { fill: #5F5E5A; }
+
+    /* c-purple */
+    .c-purple rect, .c-purple circle, .c-purple ellipse { fill: #EEEDFE; stroke: #534AB7; }
+    .c-purple .th { fill: #3C3489; }
+    .c-purple .ts { fill: #534AB7; }
+
+    /* c-coral */
+    .c-coral rect, .c-coral circle, .c-coral ellipse { fill: #FAECE7; stroke: #993C1D; }
+    .c-coral .th { fill: #712B13; }
+    .c-coral .ts { fill: #993C1D; }
+
+    /* c-teal */
+    .c-teal rect, .c-teal circle, .c-teal ellipse { fill: #E1F5EE; stroke: #0F6E56; }
+    .c-teal .th { fill: #085041; }
+    .c-teal .ts { fill: #0F6E56; }
+
+    /* c-blue */
+    .c-blue rect, .c-blue circle, .c-blue ellipse { fill: #E6F1FB; stroke: #185FA5; }
+    .c-blue .th { fill: #0C447C; }
+    .c-blue .ts { fill: #185FA5; }
+
+    /* c-amber */
+    .c-amber rect, .c-amber circle, .c-amber ellipse { fill: #FAEEDA; stroke: #854F0B; }
+    .c-amber .th { fill: #633806; }
+    .c-amber .ts { fill: #854F0B; }
+  </style>
+</defs>
+
+<!-- Row 0: Client -->
+<g class="c-gray">
+  <rect x="260" y="20" width="160" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">API client</text>
+</g>
+
+<!-- Row 1: API Gateway -->
+<g class="c-purple">
+  <rect x="160" y="108" width="360" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="128" text-anchor="middle" dominant-baseline="central">FastAPI + OWASP middleware</text>
+  <text class="ts" x="340" y="148" text-anchor="middle" dominant-baseline="central">Rate limiting · Security headers · CORS</text>
+</g>
+
+<!-- arrow client → gateway -->
+<line x1="340" y1="64" x2="340" y2="107" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Row 2: Endpoints -->
+<g class="c-coral">
+  <rect x="40" y="210" width="160" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="120" y="230" text-anchor="middle" dominant-baseline="central">Auth endpoints</text>
+  <text class="ts" x="120" y="250" text-anchor="middle" dominant-baseline="central">Register · Login · Refresh</text>
+</g>
+<g class="c-teal">
+  <rect x="220" y="210" width="140" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="290" y="230" text-anchor="middle" dominant-baseline="central">Datasets API</text>
+  <text class="ts" x="290" y="250" text-anchor="middle" dominant-baseline="central">Upload · Profile · Delete</text>
+</g>
+<g class="c-teal">
+  <rect x="380" y="210" width="130" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="445" y="230" text-anchor="middle" dominant-baseline="central">Models API</text>
+  <text class="ts" x="445" y="250" text-anchor="middle" dominant-baseline="central">Train · Predict · Delete</text>
+</g>
+<g class="c-teal">
+  <rect x="530" y="210" width="120" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="590" y="230" text-anchor="middle" dominant-baseline="central">Analytics API</text>
+  <text class="ts" x="590" y="250" text-anchor="middle" dominant-baseline="central">Describe · Corr · Forecast</text>
+</g>
+
+<!-- gateway → endpoints -->
+<path d="M220 160 L120 209" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M290 160 L290 209" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M380 160 L445 209" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M430 160 L590 209" class="arr" fill="none" marker-end="url(#arrow)"/>
+
+<!-- Row 3: Services -->
+<g class="c-blue">
+  <rect x="40" y="315" width="160" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="120" y="337" text-anchor="middle" dominant-baseline="central">UserService</text>
+</g>
+<g class="c-blue">
+  <rect x="310" y="315" width="160" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="390" y="337" text-anchor="middle" dominant-baseline="central">MLModelService</text>
+</g>
+
+<!-- endpoints → services -->
+<line x1="120" y1="262" x2="120" y2="314" class="arr" marker-end="url(#arrow)"/>
+<path d="M445 262 L390 314" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M290 262 L390 314" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M590 262 L390 314" class="arr" fill="none" marker-end="url(#arrow)"/>
+
+<!-- Row 4: ML Pipeline -->
+<g class="c-amber">
+  <rect x="220" y="415" width="340" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="390" y="437" text-anchor="middle" dominant-baseline="central">ML Pipeline (scikit-learn)</text>
+  <text class="ts" x="390" y="457" text-anchor="middle" dominant-baseline="central">Classification · Regression · Clustering · Forecast</text>
+</g>
+<line x1="390" y1="359" x2="390" y2="414" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Row 5: ORM + Artefact -->
+<g class="c-gray">
+  <rect x="40" y="535" width="200" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="140" y="555" text-anchor="middle" dominant-baseline="central">SQLAlchemy ORM</text>
+  <text class="ts" x="140" y="575" text-anchor="middle" dominant-baseline="central">Async sessions · Alembic migrations</text>
+</g>
+<g class="c-gray">
+  <rect x="460" y="535" width="180" height="52" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="555" text-anchor="middle" dominant-baseline="central">Artefact store</text>
+  <text class="ts" x="550" y="575" text-anchor="middle" dominant-baseline="central">Joblib · Local disk / S3</text>
+</g>
+<path d="M120 359 L140 534" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M500 471 L550 534" class="arr" fill="none" marker-end="url(#arrow)"/>
+<path d="M390 359 L200 534" class="arr" fill="none" marker-end="url(#arrow)"/>
+
+<!-- Row 6: Database -->
+<g class="c-gray">
+  <rect x="40" y="648" width="200" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="140" y="660" text-anchor="middle" dominant-baseline="central">PostgreSQL / SQLite</text>
+  <text class="ts" x="140" y="678" text-anchor="middle" dominant-baseline="central">RDS free tier in production</text>
+</g>
+<line x1="140" y1="587" x2="140" y2="647" class="arr" marker-end="url(#arrow)"/>
+
+<!-- CI/CD sidebar -->
+<rect x="10" y="400" width="115" height="340" rx="10" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="5 4" opacity="0.5"/>
+<text class="ts" x="67" y="420" text-anchor="middle">CI/CD</text>
+<g class="c-purple">
+  <rect x="18" y="432" width="100" height="40" rx="6" stroke-width="0.5"/>
+  <text class="th" x="68" y="452" text-anchor="middle" dominant-baseline="central">GitHub Actions</text>
+</g>
+<g class="c-gray">
+  <rect x="18" y="482" width="100" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="68" y="500" text-anchor="middle" dominant-baseline="central">Lint · Bandit · Safety</text>
+</g>
+<g class="c-gray">
+  <rect x="18" y="528" width="100" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="68" y="546" text-anchor="middle" dominant-baseline="central">pytest · Behave · Codecov</text>
+</g>
+<g class="c-gray">
+  <rect x="18" y="574" width="100" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="68" y="592" text-anchor="middle" dominant-baseline="central">Docker → ECR → Lambda</text>
+</g>
+<g class="c-gray">
+  <rect x="18" y="620" width="100" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="68" y="638" text-anchor="middle" dominant-baseline="central">SonarCloud quality gate</text>
+</g>
+<line x1="68" y1="472" x2="68" y2="481" class="arr" marker-end="url(#arrow)"/>
+<line x1="68" y1="518" x2="68" y2="527" class="arr" marker-end="url(#arrow)"/>
+<line x1="68" y1="564" x2="68" y2="573" class="arr" marker-end="url(#arrow)"/>
+<line x1="68" y1="610" x2="68" y2="619" class="arr" marker-end="url(#arrow)"/>
+
+<!-- AWS layer -->
+<rect x="40" y="750" width="600" height="52" rx="10" fill="none" stroke="#888780" stroke-width="1" stroke-dasharray="5 4" opacity="0.5"/>
+<text class="ts" x="340" y="768" text-anchor="middle">AWS free tier</text>
+<g class="c-teal">
+  <rect x="58" y="775" width="88" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="102" y="785" text-anchor="middle" dominant-baseline="central">Lambda</text>
+</g>
+<g class="c-teal">
+  <rect x="158" y="775" width="100" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="208" y="785" text-anchor="middle" dominant-baseline="central">API Gateway</text>
+</g>
+<g class="c-teal">
+  <rect x="270" y="775" width="60" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="300" y="785" text-anchor="middle" dominant-baseline="central">RDS</text>
+</g>
+<g class="c-teal">
+  <rect x="342" y="775" width="46" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="365" y="785" text-anchor="middle" dominant-baseline="central">ECR</text>
+</g>
+<g class="c-teal">
+  <rect x="400" y="775" width="46" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="423" y="785" text-anchor="middle" dominant-baseline="central">S3</text>
+</g>
+<g class="c-teal">
+  <rect x="458" y="775" width="110" height="20" rx="5" stroke-width="0.5"/>
+  <text class="ts" x="513" y="785" text-anchor="middle" dominant-baseline="central">CloudWatch</text>
+</g>
+<path d="M140 692 L200 749" class="arr" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+<path d="M550 587 L480 749" class="arr" fill="none" marker-end="url(#arrow)" opacity="0.5"/>
+
+</svg>

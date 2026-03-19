@@ -1,0 +1,276 @@
+{
+  "folders": [
+    {
+      "name": "simplydigitals-aiconnoisseur (root)",
+      "path": "."
+    },
+    {
+      "name": "simplydigitals-aiconnoisseur-api (Python)",
+      "path": "simplydigitals-aiconnoisseur-api"
+    },
+    {
+      "name": "simplydigitals-aiconnoisseur-ui (React)",
+      "path": "simplydigitals-aiconnoisseur-ui"
+    }
+  ],
+  "settings": {
+    // ── Editor ──────────────────────────────────────────────────────────────
+    "editor.formatOnSave": true,
+    "editor.rulers": [100],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    // ── Python (simplydigitals-aiconnoisseur-api) ───────────────────────────────────────────
+    "python.defaultInterpreterPath": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      },
+      "editor.tabSize": 4
+    },
+    "ruff.enable": true,
+    "ruff.lint.enable": true,
+    "mypy-type-checker.enabled": true,
+
+    // ── JavaScript / React (simplydigitals-aiconnoisseur-ui) ────────────────────────────────
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "emmet.includeLanguages": {
+      "javascript": "javascriptreact"
+    },
+
+    // ── Files ────────────────────────────────────────────────────────────────
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/.pytest_cache": true,
+      "**/htmlcov": true,
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.venv": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.venv": true,
+      "**/dist": true,
+      "**/htmlcov": true
+    },
+
+    // ── Terminal ─────────────────────────────────────────────────────────────
+    "terminal.integrated.env.linux": {
+      "PYTHONPATH": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}"
+    },
+    "terminal.integrated.env.osx": {
+      "PYTHONPATH": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      // Python
+      "ms-python.python",
+      "ms-python.black-formatter",
+      "charliermarsh.ruff",
+      "ms-python.mypy-type-checker",
+      "ms-python.vscode-pylance",
+      // React / JS
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "dsznajder.es7-react-js-snippets",
+      // General
+      "eamodio.gitlens",
+      "streetsidesoftware.code-spell-checker",
+      "christian-kohler.path-intellisense",
+      "EditorConfig.EditorConfig",
+      "usernamehw.errorlens",
+      // Docker & YAML
+      "ms-azuretools.vscode-docker",
+      "redhat.vscode-yaml",
+      // REST API testing
+      "humao.rest-client"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "API: uvicorn (dev)",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": [
+          "app.main:app",
+          "--reload",
+          "--host", "0.0.0.0",
+          "--port", "8000"
+        ],
+        "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+        "env": {
+          "ENVIRONMENT": "development",
+          "SECRET_KEY": "dev-secret-key-change-in-production-min-32-chars"
+        },
+        "justMyCode": true
+      },
+      {
+        "name": "API: pytest (all unit tests)",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "pytest",
+        "args": [
+          "tests/unit/",
+          "-v",
+          "--cov=app",
+          "--cov-report=term-missing"
+        ],
+        "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+        "env": {
+          "ENVIRONMENT": "testing",
+          "SECRET_KEY": "test-secret-key-at-least-32-chars-long!!"
+        },
+        "justMyCode": false
+      },
+      {
+        "name": "API: pytest (current file)",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "pytest",
+        "args": ["${file}", "-v"],
+        "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+        "env": {
+          "ENVIRONMENT": "testing",
+          "SECRET_KEY": "test-secret-key-at-least-32-chars-long!!"
+        },
+        "justMyCode": false
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Full Stack: API + UI",
+        "configurations": ["API: uvicorn (dev)"],
+        "stopAll": true,
+        "presentation": {
+          "hidden": false,
+          "group": "fullstack",
+          "order": 1
+        }
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "API: install dependencies",
+        "type": "shell",
+        "command": "pip install -e '.[dev,test]'",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}" },
+        "group": "build",
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "API: run migrations",
+        "type": "shell",
+        "command": "alembic upgrade head",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}" },
+        "group": "build"
+      },
+      {
+        "label": "API: start server",
+        "type": "shell",
+        "command": "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+        "options": {
+          "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+          "env": {
+            "ENVIRONMENT": "development",
+            "SECRET_KEY": "dev-secret-key-change-in-production-min-32-chars"
+          }
+        },
+        "group": "test",
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "API: run unit tests",
+        "type": "shell",
+        "command": "pytest tests/unit/ -v --cov=app --cov-report=term-missing",
+        "options": {
+          "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+          "env": {
+            "ENVIRONMENT": "testing",
+            "SECRET_KEY": "test-secret-key-at-least-32-chars-long!!"
+          }
+        },
+        "group": { "kind": "test", "isDefault": true },
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "API: run BDD tests",
+        "type": "shell",
+        "command": "behave tests/bdd/features/ --no-capture",
+        "options": {
+          "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}",
+          "env": {
+            "ENVIRONMENT": "testing",
+            "SECRET_KEY": "test-secret-key-at-least-32-chars-long!!"
+          }
+        },
+        "group": "test"
+      },
+      {
+        "label": "API: lint (ruff + black)",
+        "type": "shell",
+        "command": "ruff check app tests && black --check app tests",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}" },
+        "group": "build"
+      },
+      {
+        "label": "UI: install dependencies",
+        "type": "shell",
+        "command": "npm install",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-ui (React)}" },
+        "group": "build"
+      },
+      {
+        "label": "UI: start dev server",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-ui (React)}" },
+        "group": "test",
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "UI: build",
+        "type": "shell",
+        "command": "npm run build",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-ui (React)}" },
+        "group": "build"
+      },
+      {
+        "label": "Full Stack: start both",
+        "dependsOn": ["API: start server", "UI: start dev server"],
+        "dependsOrder": "parallel",
+        "group": { "kind": "test", "isDefault": false },
+        "presentation": { "reveal": "always", "panel": "shared" }
+      },
+      {
+        "label": "Docker: compose up",
+        "type": "shell",
+        "command": "docker-compose up --build",
+        "options": { "cwd": "${workspaceFolder:simplydigitals-aiconnoisseur-api (Python)}" },
+        "group": "build"
+      }
+    ]
+  }
+}

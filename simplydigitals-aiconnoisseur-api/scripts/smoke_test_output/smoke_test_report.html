@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smoke Test Report — simplydigitals-aiconnoisseur-api</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg:        #0A0A0F;
+      --surface:   #111118;
+      --surface2:  #1A1A24;
+      --border:    rgba(255,255,255,0.07);
+      --jade:      #00C98A;
+      --jade-dim:  rgba(0,201,138,0.12);
+      --jade-border: rgba(0,201,138,0.25);
+      --rose:      #F43F5E;
+      --rose-dim:  rgba(244,63,94,0.10);
+      --rose-border: rgba(244,63,94,0.25);
+      --amber:     #F59E0B;
+      --violet:    #8B5CF6;
+      --text:      #E8E8F0;
+      --muted:     #6B6B8A;
+      --mono:      'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 0 0 60px;
+      background-image:
+        radial-gradient(ellipse 70% 40% at 15% 0%, rgba(0,201,138,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 30% at 85% 100%, rgba(139,92,246,0.05) 0%, transparent 60%);
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 40px 48px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+    .logo span { color: var(--jade); }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .header-meta { text-align: right; }
+    .timestamp { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .base-url { font-family: var(--mono); font-size: 12px; color: var(--jade); margin-top: 4px; }
+
+    /* ── Summary cards ── */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 32px 48px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .card-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .card-value.jade { color: var(--jade); }
+    .card-value.rose { color: var(--rose); }
+    .card-value.amber { color: var(--amber); }
+    .card-value.violet { color: var(--violet); }
+
+    /* ── Progress bar ── */
+    .progress-wrap { padding: 0 48px 32px; }
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .progress-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--jade), var(--rose));
+      width: 52.4%;
+      transition: width 1s ease;
+    }
+
+    /* ── Verdict banner ── */
+    .verdict {
+      margin: 0 48px 32px;
+      padding: 16px 24px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      background: var(--rose-dim); border: 1px solid var(--rose-border); color: var(--rose);
+    }
+    .verdict-icon { font-size: 24px; }
+
+    /* ── Results table ── */
+    .table-wrap {
+      margin: 0 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .group-header td {
+      background: var(--surface2);
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .pass-row { background: transparent; }
+    .fail-row { background: rgba(244,63,94,0.04); }
+
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 12px; font-weight: 700;
+    }
+    .badge.pass { background: var(--jade-dim); color: var(--jade); border: 1px solid var(--jade-border); }
+    .badge.fail { background: var(--rose-dim); color: var(--rose); border: 1px solid var(--rose-border); }
+
+    .test-name { font-size: 13px; color: var(--text); }
+    .fail-reason { font-size: 11px; color: var(--rose); margin-top: 3px; }
+
+    .method {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 5px;
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+    }
+    .method-get  { background: rgba(0,201,138,0.10); color: var(--jade);   }
+    .method-post { background: rgba(139,92,246,0.12); color: var(--violet); }
+    .method-delete { background: rgba(244,63,94,0.10); color: var(--rose); }
+
+    .url-cell { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+    .status-code {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 5px;
+      font-family: var(--mono); font-size: 12px; font-weight: 500;
+    }
+    .status-2xx { background: rgba(0,201,138,0.10); color: var(--jade); }
+    .status-4xx { background: rgba(245,158,11,0.10); color: var(--amber); }
+    .status-5xx { background: rgba(244,63,94,0.10); color: var(--rose); }
+
+    .ms-fast { color: var(--jade); font-family: var(--mono); font-size: 12px; }
+    .ms-ok   { color: var(--amber); font-family: var(--mono); font-size: 12px; }
+    .ms-slow { color: var(--rose); font-family: var(--mono); font-size: 12px; }
+
+    .detail-row td {
+      padding: 0 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .response-snippet {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 80px;
+      overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 40px;
+      padding: 0 48px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Simply<span>Digitals</span> · AIConnoisseur</div>
+    <div class="subtitle">API Smoke Test Report</div>
+  </div>
+  <div class="header-meta">
+    <div class="timestamp">2026-03-18 13:39:34 UTC</div>
+    <div class="base-url">http://localhost:8000</div>
+  </div>
+</header>
+
+<div class="summary">
+  <div class="card">
+    <div class="card-label">Total Checks</div>
+    <div class="card-value violet">21</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Passed</div>
+    <div class="card-value jade">11</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Failed</div>
+    <div class="card-value rose">10</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Pass Rate</div>
+    <div class="card-value amber">52.4%</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Duration</div>
+    <div class="card-value amber">904.9ms</div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">11 of 21 checks passed</div>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+</div>
+
+<div class="verdict">
+  <span class="verdict-icon">✘</span>
+  10 check(s) failed — review the details below
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px"></th>
+        <th>Test</th>
+        <th style="width:70px">Method</th>
+        <th>Endpoint</th>
+        <th style="width:70px">Status</th>
+        <th style="width:80px">Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr class="group-header">
+          <td colspan="6">Health</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">GET /health → 200</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/health</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">30.5ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"status": "ok", "version": "1.0.0"}</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">GET /metrics → 200 (Prometheus text)</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/metrics</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet"># HELP python_gc_objects_collected_total Objects collected during gc
+# TYPE python_gc_objects_collected_total counter
+py</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Authentication</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">POST /auth/register → 201</td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/auth/register</td>
+          <td><span class="status-code status-2xx">201</span></td>
+          <td><span class="ms-fast">331.9ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"id": "63cbff9d-9a0c-4b51-9942-6b2fb96c202b", "email": "smoke_f883e21a@test.com", "full_name": "Smoke Test", "is_active": true, "created_at": "2026-03-18T13:39:34.308629Z"}</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">POST /auth/register duplicate → 409</td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/auth/register</td>
+          <td><span class="status-code status-4xx">409</span></td>
+          <td><span class="ms-fast">3.4ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Email already registered"}</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">POST /auth/login → 200</td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/auth/login</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">250.6ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2M2NiZmY5ZC05YTBjLTRiNTEtOTk0Mi02YjJmYjk2YzIwMmIiLCJleHAiOjE3NzM4NDI5NzQsImlhdCI6MTc3Mzg0MTE3NCwidHlwZSI6ImFjY2VzcyJ9.HKLGFBgpWckdr1SBvejZ34gPu6HIZkPH4w3CsTQQdM0", "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2M2NiZmY5ZC05YTBjLTRiNTEtOTk0Mi02YjJmYjk2YzIwMmIiLCJleHAiOjE3NzQ0NDU5NzQsImlhdCI6MTc3Mzg0MTE3NCwidHlwZSI6InJlZnJlc2gifQ.ONFSRKRTHlMNyLGmBrjvsNXT7kIOzdK2JjkcZWBLO1M", "token_type": "bearer"}</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">POST /auth/login wrong password → 401</td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/auth/login</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">245.9ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Invalid credentials"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">POST /auth/refresh → 200<div class="fail-reason">Expected status 200, got 401</div></td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/auth/refresh</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">2.7ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Invalid or expired refresh token"}</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Auth guards</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /datasets/ no token → 403<div class="fail-reason">Expected status 403, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/datasets/</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">2.8ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /models/ no token → 403<div class="fail-reason">Expected status 403, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/models/</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">1.9ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">GET /models/ bad token → 401</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/models/</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">1.3ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Invalid or expired token"}</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Datasets</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /datasets/ authenticated → 200<div class="fail-reason">Expected status 200, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/datasets/</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">1.3ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /datasets/bad-id → 404<div class="fail-reason">Expected status 404, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/datasets/nonexistent</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">10.5ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Models</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /models/ authenticated → 200<div class="fail-reason">Expected status 200, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/models/</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">1.5ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">GET /models/bad-id → 404<div class="fail-reason">Expected status 404, got 401</div></td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/api/v1/models/nonexistent</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">1.7ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">POST /models/train bad dataset → 404<div class="fail-reason">Expected status 404, got 401</div></td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/models/train</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">2.0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Analytics</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">POST /analytics/describe bad dataset → 404<div class="fail-reason">Expected status 404, got 401</div></td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/analytics/describe</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">2.1ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="fail-row">
+          <td><span class="badge fail">✘</span></td>
+          <td class="test-name">POST /analytics/correlation bad dataset → 404<div class="fail-reason">Expected status 404, got 401</div></td>
+          <td><span class="method method-post">POST</span></td>
+          <td class="url-cell">/api/v1/analytics/correlation</td>
+          <td><span class="status-code status-4xx">401</span></td>
+          <td><span class="ms-fast">2.5ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">{"detail": "Not authenticated"}</td>
+        </tr>
+        <tr class="group-header">
+          <td colspan="6">Security headers</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">Header: x-content-type-options</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/health</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">x-content-type-options: nosniff</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">Header: x-frame-options</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/health</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">x-frame-options: DENY</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">Header: x-xss-protection</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/health</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">x-xss-protection: 1; mode=block</td>
+        </tr>
+        <tr class="pass-row">
+          <td><span class="badge pass">✔</span></td>
+          <td class="test-name">Header: referrer-policy</td>
+          <td><span class="method method-get">GET</span></td>
+          <td class="url-cell">/health</td>
+          <td><span class="status-code status-2xx">200</span></td>
+          <td><span class="ms-fast">0ms</span></td>
+        </tr>
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="5" class="response-snippet">referrer-policy: strict-origin-when-cross-origin</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  <p>Generated by smoke_test.py · simplydigitals-aiconnoisseur-api · 2026-03-18 13:39:34 UTC</p>
+</footer>
+
+</body>
+</html>
