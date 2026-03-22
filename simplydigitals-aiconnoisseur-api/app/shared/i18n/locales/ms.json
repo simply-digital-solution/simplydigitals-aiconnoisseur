@@ -1,0 +1,39 @@
+{
+  "auth": {
+    "invalid_credentials":       "Kelayakan tidak sah",
+    "account_disabled":          "Akaun dilumpuhkan",
+    "email_already_registered":  "E-mel sudah didaftarkan",
+    "invalid_refresh_token":     "Token segar semula tidak sah atau telah tamat tempoh",
+    "user_not_found":            "Pengguna tidak dijumpai",
+    "google_unavailable":        "Tidak dapat menghubungi perkhidmatan pengesahan Google",
+    "google_token_invalid":      "Token Google tidak sah atau telah tamat tempoh",
+    "google_audience_mismatch":  "Ketidakpadanan penonton token Google",
+    "google_no_email":           "Akaun Google tiada alamat e-mel",
+    "facebook_not_configured":   "Log masuk Facebook tidak dikonfigurasikan pada pelayan ini",
+    "facebook_unavailable":      "Tidak dapat menghubungi perkhidmatan pengesahan Facebook",
+    "facebook_token_invalid":    "Token Facebook tidak sah",
+    "facebook_wrong_app":        "Token Facebook bukan dikeluarkan untuk aplikasi ini",
+    "facebook_no_email":         "Akaun Facebook tiada e-mel yang disahkan. Berikan kebenaran e-mel atau gunakan kaedah log masuk lain."
+  },
+  "datasets": {
+    "not_found":       "Set data tidak dijumpai",
+    "parse_error":     "Tidak dapat menghurai CSV: {detail}",
+    "upload_success":  "Set data berjaya dimuat naik"
+  },
+  "models": {
+    "not_found":       "Model tidak dijumpai",
+    "not_ready":       "Model belum bersedia untuk inferens",
+    "artefact_missing":"Artifak model tiada",
+    "training_failed": "Latihan gagal: {detail}",
+    "delete_success":  "Model berjaya dipadam"
+  },
+  "analytics": {
+    "not_found": "Set data tidak dijumpai"
+  },
+  "validation": {
+    "error": "Ralat pengesahan"
+  },
+  "health": {
+    "ok": "Perkhidmatan sihat"
+  }
+}

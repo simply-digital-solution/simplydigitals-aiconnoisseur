@@ -1,0 +1,39 @@
+{
+  "auth": {
+    "invalid_credentials":       "Invalid credentials",
+    "account_disabled":          "Account disabled",
+    "email_already_registered":  "Email already registered",
+    "invalid_refresh_token":     "Invalid or expired refresh token",
+    "user_not_found":            "User not found",
+    "google_unavailable":        "Could not reach Google authentication service",
+    "google_token_invalid":      "Invalid or expired Google token",
+    "google_audience_mismatch":  "Google token audience mismatch",
+    "google_no_email":           "Google account has no email address",
+    "facebook_not_configured":   "Facebook login is not configured on this server",
+    "facebook_unavailable":      "Could not reach Facebook authentication service",
+    "facebook_token_invalid":    "Facebook token is not valid",
+    "facebook_wrong_app":        "Facebook token was not issued for this application",
+    "facebook_no_email":         "Facebook account has no verified email. Grant email permission or use a different login."
+  },
+  "datasets": {
+    "not_found":       "Dataset not found",
+    "parse_error":     "Could not parse CSV: {detail}",
+    "upload_success":  "Dataset uploaded successfully"
+  },
+  "models": {
+    "not_found":       "Model not found",
+    "not_ready":       "Model is not ready for inference",
+    "artefact_missing":"Model artefact is missing",
+    "training_failed": "Training failed: {detail}",
+    "delete_success":  "Model deleted successfully"
+  },
+  "analytics": {
+    "not_found": "Dataset not found"
+  },
+  "validation": {
+    "error": "Validation error"
+  },
+  "health": {
+    "ok": "Service is healthy"
+  }
+}

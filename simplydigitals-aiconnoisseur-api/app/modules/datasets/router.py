@@ -1,4 +1,4 @@
-"""Datasets module — API router."""
+"""Datasets module — API router with i18n."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from app.modules.auth.models import User
 from app.modules.datasets.schemas import DatasetProfile, DatasetRead
 from app.modules.datasets.service import DatasetService
 from app.shared.database import get_db
+from app.shared.i18n.translator import get_translator
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
 
@@ -23,7 +24,8 @@ async def upload_dataset(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DatasetRead:
-    dataset = await DatasetService(db).upload(file, name, description, current_user.id, request)
+    t = get_translator(request)
+    dataset = await DatasetService(db).upload(file, name, description, current_user.id, request, t)
     return DatasetRead.model_validate(dataset)
 
 
@@ -39,27 +41,33 @@ async def list_datasets(
 @router.get("/{dataset_id}", response_model=DatasetRead)
 async def get_dataset(
     dataset_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DatasetRead:
-    dataset = await DatasetService(db).get(dataset_id, current_user.id)
+    t = get_translator(request)
+    dataset = await DatasetService(db).get(dataset_id, current_user.id, t)
     return DatasetRead.model_validate(dataset)
 
 
 @router.get("/{dataset_id}/profile", response_model=DatasetProfile)
 async def get_dataset_profile(
     dataset_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DatasetProfile:
-    dataset = await DatasetService(db).get(dataset_id, current_user.id)
+    t = get_translator(request)
+    dataset = await DatasetService(db).get(dataset_id, current_user.id, t)
     return DatasetProfile.model_validate(dataset)
 
 
 @router.delete("/{dataset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_dataset(
     dataset_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    await DatasetService(db).delete(dataset_id, current_user.id)
+    t = get_translator(request)
+    await DatasetService(db).delete(dataset_id, current_user.id, t)

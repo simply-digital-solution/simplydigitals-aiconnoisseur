@@ -1,0 +1,39 @@
+{
+  "auth": {
+    "invalid_credentials":       "தவறான நற்சான்றிதழ்கள்",
+    "account_disabled":          "கணக்கு முடக்கப்பட்டது",
+    "email_already_registered":  "மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டது",
+    "invalid_refresh_token":     "புதுப்பிப்பு டோக்கன் தவறானது அல்லது காலாவதியானது",
+    "user_not_found":            "பயனர் கண்டுபிடிக்கப்படவில்லை",
+    "google_unavailable":        "Google அங்கீகார சேவையை அடைய முடியவில்லை",
+    "google_token_invalid":      "Google டோக்கன் தவறானது அல்லது காலாவதியானது",
+    "google_audience_mismatch":  "Google டோக்கன் பார்வையாளர் பொருத்தமில்லை",
+    "google_no_email":           "Google கணக்கில் மின்னஞ்சல் முகவரி இல்லை",
+    "facebook_not_configured":   "இந்த சேவையகத்தில் Facebook உள்நுழைவு கட்டமைக்கப்படவில்லை",
+    "facebook_unavailable":      "Facebook அங்கீகார சேவையை அடைய முடியவில்லை",
+    "facebook_token_invalid":    "Facebook டோக்கன் செல்லுபடியாகவில்லை",
+    "facebook_wrong_app":        "Facebook டோக்கன் இந்த பயன்பாட்டிற்காக வழங்கப்படவில்லை",
+    "facebook_no_email":         "Facebook கணக்கில் சரிபார்க்கப்பட்ட மின்னஞ்சல் இல்லை."
+  },
+  "datasets": {
+    "not_found":       "தரவுத்தொகுப்பு கண்டுபிடிக்கப்படவில்லை",
+    "parse_error":     "CSV ஐ பாகுபடுத்த முடியவில்லை: {detail}",
+    "upload_success":  "தரவுத்தொகுப்பு வெற்றிகரமாக பதிவேற்றப்பட்டது"
+  },
+  "models": {
+    "not_found":       "மாதிரி கண்டுபிடிக்கப்படவில்லை",
+    "not_ready":       "மாதிரி அனுமானத்திற்கு தயாராக இல்லை",
+    "artefact_missing":"மாதிரி கலைப்படைப்பு காணவில்லை",
+    "training_failed": "பயிற்சி தோல்வியடைந்தது: {detail}",
+    "delete_success":  "மாதிரி வெற்றிகரமாக நீக்கப்பட்டது"
+  },
+  "analytics": {
+    "not_found": "தரவுத்தொகுப்பு கண்டுபிடிக்கப்படவில்லை"
+  },
+  "validation": {
+    "error": "சரிபார்ப்பு பிழை"
+  },
+  "health": {
+    "ok": "சேவை ஆரோக்கியமாக உள்ளது"
+  }
+}
