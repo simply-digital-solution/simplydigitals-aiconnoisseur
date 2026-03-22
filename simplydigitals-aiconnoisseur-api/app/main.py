@@ -103,6 +103,14 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ── i18n — echo resolved locale back to client ──────────────────────────────
+    @app.middleware("http")
+    async def content_language_header(request: Request, call_next):  # type: ignore[no-untyped-def]
+        from app.shared.i18n.translator import get_locale
+        response = await call_next(request)
+        response.headers["Content-Language"] = get_locale(request)
+        return response
+
     # ── OWASP security headers ────────────────────────────────────────────────
     @app.middleware("http")
     async def security_headers(request: Request, call_next):  # type: ignore[no-untyped-def]

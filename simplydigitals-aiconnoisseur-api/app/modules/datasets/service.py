@@ -1,12 +1,10 @@
-"""Datasets module — DatasetService.
-
-Owns CSV ingestion, profiling, and dataset lifecycle.
-"""
+"""Datasets module — DatasetService with i18n."""
 
 from __future__ import annotations
 
 import os
-from typing import Any
+import uuid
+from typing import Any, Callable
 
 import pandas as pd
 from fastapi import HTTPException, Request, UploadFile, status
@@ -50,8 +48,10 @@ def _profile_dataframe(df: pd.DataFrame) -> dict[str, Any]:
     return profile
 
 
-class DatasetService:
+_noop = lambda k, **kw: k  # noqa: E731
 
+
+class DatasetService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
@@ -62,24 +62,21 @@ class DatasetService:
         description: str | None,
         owner_id: str,
         request: Request,
+        t: Callable[..., str] = _noop,
     ) -> Dataset:
         os.makedirs(settings.MODEL_ARTEFACT_DIR, exist_ok=True)
-        import uuid
         file_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{uuid.uuid4()}.csv")
-
         content = await file.read()
         with open(file_path, "wb") as f:
             f.write(content)
-
         try:
             df = pd.read_csv(file_path)
         except Exception as exc:
             os.remove(file_path)
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Could not parse CSV: {exc}",
+                detail=t("datasets.parse_error", detail=str(exc)),
             ) from exc
-
         dataset = Dataset(
             name=name,
             description=description,
@@ -96,22 +93,30 @@ class DatasetService:
         return dataset
 
     async def list_datasets(self, owner_id: str) -> list[Dataset]:
-        result = await self.db.execute(
-            select(Dataset).where(Dataset.owner_id == owner_id)
-        )
+        result = await self.db.execute(select(Dataset).where(Dataset.owner_id == owner_id))
         return list(result.scalars().all())
 
-    async def get(self, dataset_id: str, owner_id: str) -> Dataset:
+    async def get(
+        self,
+        dataset_id: str,
+        owner_id: str,
+        t: Callable[..., str] = _noop,
+    ) -> Dataset:
         result = await self.db.execute(
             select(Dataset).where(Dataset.id == dataset_id, Dataset.owner_id == owner_id)
         )
         dataset = result.scalar_one_or_none()
         if not dataset:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dataset not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("datasets.not_found"))
         return dataset
 
-    async def delete(self, dataset_id: str, owner_id: str) -> None:
-        dataset = await self.get(dataset_id, owner_id)
+    async def delete(
+        self,
+        dataset_id: str,
+        owner_id: str,
+        t: Callable[..., str] = _noop,
+    ) -> None:
+        dataset = await self.get(dataset_id, owner_id, t)
         if os.path.exists(dataset.file_path):
             os.remove(dataset.file_path)
         await self.db.delete(dataset)

@@ -1,0 +1,39 @@
+{
+  "auth": {
+    "invalid_credentials":       "凭据无效",
+    "account_disabled":          "账户已禁用",
+    "email_already_registered":  "电子邮件已注册",
+    "invalid_refresh_token":     "刷新令牌无效或已过期",
+    "user_not_found":            "未找到用户",
+    "google_unavailable":        "无法连接到Google身份验证服务",
+    "google_token_invalid":      "Google令牌无效或已过期",
+    "google_audience_mismatch":  "Google令牌受众不匹配",
+    "google_no_email":           "Google账户没有电子邮件地址",
+    "facebook_not_configured":   "此服务器未配置Facebook登录",
+    "facebook_unavailable":      "无法连接到Facebook身份验证服务",
+    "facebook_token_invalid":    "Facebook令牌无效",
+    "facebook_wrong_app":        "Facebook令牌不是为此应用程序颁发的",
+    "facebook_no_email":         "Facebook账户没有已验证的电子邮件。请授予电子邮件权限或使用其他登录方式。"
+  },
+  "datasets": {
+    "not_found":       "未找到数据集",
+    "parse_error":     "无法解析CSV: {detail}",
+    "upload_success":  "数据集上传成功"
+  },
+  "models": {
+    "not_found":       "未找到模型",
+    "not_ready":       "模型尚未准备好进行推理",
+    "artefact_missing":"模型文件缺失",
+    "training_failed": "训练失败: {detail}",
+    "delete_success":  "模型删除成功"
+  },
+  "analytics": {
+    "not_found": "未找到数据集"
+  },
+  "validation": {
+    "error": "验证错误"
+  },
+  "health": {
+    "ok": "服务正常"
+  }
+}
