@@ -100,12 +100,84 @@ jobs:
           retention-days: 7
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 3. BUILD DOCKER IMAGE
+  # 3. RESOLVE VERSION
+  # Determines the semantic version from git tags or generates a dev version
+  # ═══════════════════════════════════════════════════════════════════════════
+  version:
+    name: Resolve Version
+    runs-on: ubuntu-latest
+    outputs:
+      version:        ${{ steps.resolve.outputs.version }}
+      major:          ${{ steps.resolve.outputs.major }}
+      minor:          ${{ steps.resolve.outputs.minor }}
+      is_release:     ${{ steps.resolve.outputs.is_release }}
+      image_tags:     ${{ steps.resolve.outputs.image_tags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve version
+        id: resolve
+        run: |
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+
+          # Check if this commit has a semver tag (e.g. v1.2.3)
+          GIT_TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+          if [ -n "$GIT_TAG" ]; then
+            # Tagged release — use full semver
+            VERSION="${GIT_TAG#v}"                          # strip leading v → 1.2.3
+            MAJOR=$(echo $VERSION | cut -d. -f1)           # 1
+            MINOR=$(echo $VERSION | cut -d. -f1-2)         # 1.2
+            IS_RELEASE="true"
+            echo "Release version detected: $VERSION"
+
+            # Tags: v1.2.3, 1.2, 1, latest, sha
+            IMAGE_TAGS="${GIT_TAG},${MINOR},${MAJOR},latest,${SHORT_SHA}"
+          else
+            # Not a tagged release — use dev version
+            # Find the most recent semver tag to compute distance
+            LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+            if [ -n "$LAST_TAG" ]; then
+              DISTANCE=$(git rev-list ${LAST_TAG}..HEAD --count)
+              BASE="${LAST_TAG#v}"
+              VERSION="${BASE}-dev.${DISTANCE}+${SHORT_SHA}"
+            else
+              VERSION="0.0.0-dev+${SHORT_SHA}"
+            fi
+
+            MAJOR="0"
+            MINOR="0"
+            IS_RELEASE="false"
+            echo "Development version: $VERSION"
+
+            # Tags: dev, sha only — never overwrite latest or semver tags
+            IMAGE_TAGS="dev,${SHORT_SHA}"
+          fi
+
+          echo "version=$VERSION"       >> $GITHUB_OUTPUT
+          echo "major=$MAJOR"           >> $GITHUB_OUTPUT
+          echo "minor=$MINOR"           >> $GITHUB_OUTPUT
+          echo "is_release=$IS_RELEASE" >> $GITHUB_OUTPUT
+          echo "image_tags=$IMAGE_TAGS" >> $GITHUB_OUTPUT
+
+      - name: Print version summary
+        run: |
+          echo "Version     : ${{ steps.resolve.outputs.version }}"
+          echo "Is release  : ${{ steps.resolve.outputs.is_release }}"
+          echo "Image tags  : ${{ steps.resolve.outputs.image_tags }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 4. BUILD DOCKER IMAGE
   # ═══════════════════════════════════════════════════════════════════════════
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: [unit-tests]
+    needs: [unit-tests, version]
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -118,32 +190,37 @@ jobs:
           context: simplydigitals-aiconnoisseur-api
           push: false
           load: true
-          tags: simplydigitals-aiconnoisseur-api:${{ github.sha }}
+          tags: simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}
+          build-args: |
+            APP_VERSION=${{ needs.version.outputs.version }}
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
 
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: simplydigitals-aiconnoisseur-api:${{ github.sha }}
+          image-ref: simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}
           format: table
           exit-code: "0"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 4. DEPLOY TO AWS LAMBDA
+  # 5. DEPLOY TO AWS LAMBDA
   # Runs only on push to main when deploy input is true
   # ═══════════════════════════════════════════════════════════════════════════
   deploy:
     name: Deploy API to Lambda
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, version]
     if: inputs.deploy && github.ref == 'refs/heads/main'
     environment:
       name: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -156,55 +233,116 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push image to ECR
+      - name: Build and push versioned image to ECR
         uses: docker/build-push-action@v5
         with:
           context: simplydigitals-aiconnoisseur-api
           push: true
           tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ needs.version.outputs.version }}
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+          build-args: |
+            APP_VERSION=${{ needs.version.outputs.version }}
+          labels: |
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.repository.updated_at }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
           cache-from: type=gha,scope=api
 
-      - name: Create Lambda function if it does not exist
+      - name: Push additional version tags for releases
+        if: needs.version.outputs.is_release == 'true'
         run: |
+          ECR_REGISTRY=${{ steps.ecr.outputs.registry }}
+          REPO=${{ secrets.ECR_REPOSITORY }}
+          VERSION=${{ needs.version.outputs.version }}
+          MAJOR=${{ needs.version.outputs.major }}
+          MINOR=${{ needs.version.outputs.minor }}
+          SHA=${{ github.sha }}
+
+          # Get the manifest for the image we just pushed
+          MANIFEST=$(aws ecr batch-get-image \
+            --repository-name $REPO \
+            --image-ids imageTag=$SHA \
+            --region ap-southeast-2 \
+            --query 'images[0].imageManifest' \
+            --output text)
+
+          # Push alias tags: major, minor, latest
+          for TAG in $MAJOR $MINOR latest; do
+            aws ecr put-image \
+              --repository-name $REPO \
+              --image-tag $TAG \
+              --image-manifest "$MANIFEST" \
+              --region ap-southeast-2 2>/dev/null || true
+            echo "Tagged: $ECR_REGISTRY/$REPO:$TAG"
+          done
+
+      - name: Create or update Lambda function
+        run: |
+          IMAGE_URI=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+          LAMBDA_NAME=${{ secrets.LAMBDA_FUNCTION_NAME }}
+          REGION=ap-southeast-2
+
           EXISTS=$(aws lambda get-function \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-            --region ap-southeast-2 2>&1 || echo "NOT_FOUND")
+            --function-name $LAMBDA_NAME \
+            --region $REGION 2>&1 || echo "NOT_FOUND")
 
           if echo "$EXISTS" | grep -q "NOT_FOUND"; then
-            echo "Creating Lambda function..."
+            echo "Creating Lambda function (version ${{ needs.version.outputs.version }})..."
             aws lambda create-function \
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+              --function-name $LAMBDA_NAME \
               --package-type Image \
-              --code ImageUri=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
+              --code ImageUri=$IMAGE_URI \
               --role ${{ secrets.LAMBDA_ROLE_ARN }} \
               --timeout 300 \
               --memory-size 1024 \
-              --region ap-southeast-2 \
+              --region $REGION \
+              --description "AI Connoisseur API v${{ needs.version.outputs.version }}" \
               --environment "Variables={
                 ENVIRONMENT=production,
                 SECRET_KEY=${{ secrets.SECRET_KEY }},
                 DATABASE_URL=${{ secrets.DATABASE_URL }},
                 MODEL_ARTEFACT_DIR=/tmp/artefacts,
                 S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},
-                LOG_LEVEL=INFO
+                LOG_LEVEL=INFO,
+                APP_VERSION=${{ needs.version.outputs.version }}
               }"
             aws lambda wait function-active \
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-              --region ap-southeast-2
-            echo "Lambda created successfully"
+              --function-name $LAMBDA_NAME \
+              --region $REGION
+            echo "Lambda created"
           else
-            echo "Updating existing Lambda function..."
+            echo "Updating Lambda function (version ${{ needs.version.outputs.version }})..."
             aws lambda update-function-code \
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-              --image-uri ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
-              --region ap-southeast-2
+              --function-name $LAMBDA_NAME \
+              --image-uri $IMAGE_URI \
+              --region $REGION
             aws lambda wait function-updated \
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-              --region ap-southeast-2
-            echo "Lambda updated successfully"
+              --function-name $LAMBDA_NAME \
+              --region $REGION
+
+            # Update description with new version
+            aws lambda update-function-configuration \
+              --function-name $LAMBDA_NAME \
+              --description "AI Connoisseur API v${{ needs.version.outputs.version }}" \
+              --region $REGION
+            aws lambda wait function-updated \
+              --function-name $LAMBDA_NAME \
+              --region $REGION
+            echo "Lambda updated"
           fi
+
+      - name: Publish Lambda version (for releases only)
+        if: needs.version.outputs.is_release == 'true'
+        run: |
+          PUBLISHED=$(aws lambda publish-version \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --description "Release v${{ needs.version.outputs.version }}" \
+            --region ap-southeast-2 \
+            --query Version --output text)
+          echo "Lambda version published: $PUBLISHED"
+          echo "LAMBDA_VERSION=$PUBLISHED" >> $GITHUB_ENV
 
       - name: Create API Gateway if it does not exist
         run: |
@@ -213,7 +351,7 @@ jobs:
             --query "Items[?Name=='simplydigitals-aiconnoisseur-api-gateway'].ApiId" \
             --output text)
 
-          if [ -z "$APIS" ]; then
+          if [ -z "$APIS" ] || [ "$APIS" = "None" ]; then
             echo "Creating API Gateway..."
             API_ID=$(aws apigatewayv2 create-api \
               --name simplydigitals-aiconnoisseur-api-gateway \
@@ -249,15 +387,16 @@ jobs:
               --source-arn "arn:aws:execute-api:ap-southeast-2:${{ secrets.AWS_ACCOUNT_ID }}:$API_ID/*/*/{proxy+}" \
               --region ap-southeast-2
 
-            API_URL="https://$API_ID.execute-api.ap-southeast-2.amazonaws.com/production"
-            echo "API Gateway created: $API_URL"
+            echo "API_ID=$API_ID" >> $GITHUB_ENV
+            echo "API Gateway created: $API_ID"
           else
-            API_ID=$APIS
-            API_URL="https://$API_ID.execute-api.ap-southeast-2.amazonaws.com/production"
-            echo "API Gateway already exists: $API_URL"
+            echo "API_ID=$APIS" >> $GITHUB_ENV
+            echo "API Gateway already exists: $APIS"
           fi
 
+          API_URL="https://$API_ID.execute-api.ap-southeast-2.amazonaws.com/production"
           echo "API_URL=$API_URL" >> $GITHUB_ENV
+          echo "API URL: $API_URL"
 
       - name: Health check
         run: |
@@ -266,11 +405,24 @@ jobs:
           for i in $(seq 1 5); do
             STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "$API_URL/health" || echo "000")
             if [ "$STATUS" = "200" ]; then
-              echo "Health check passed"
+              echo "Health check passed — API is live at $API_URL"
               exit 0
             fi
-            echo "Attempt $i failed (status $STATUS) — retrying in 10s..."
+            echo "Attempt $i — status $STATUS — retrying in 10s..."
             sleep 10
           done
-          echo "Health check failed after 5 attempts"
+          echo "Health check failed"
           exit 1
+
+      - name: Print deployment summary
+        if: always()
+        run: |
+          echo "=================================="
+          echo " Deployment Summary"
+          echo "=================================="
+          echo " Version  : ${{ needs.version.outputs.version }}"
+          echo " Release  : ${{ needs.version.outputs.is_release }}"
+          echo " ECR tags : ${{ needs.version.outputs.image_tags }}"
+          echo " Lambda   : ${{ secrets.LAMBDA_FUNCTION_NAME }}"
+          echo " Region   : ap-southeast-2"
+          echo "=================================="
