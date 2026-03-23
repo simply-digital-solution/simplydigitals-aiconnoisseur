@@ -3,6 +3,8 @@ name: Orchestrator
 on:
   push:
     branches: [main, develop, "feature/**", "feat/**", "fix/**", "refactor/**", "hotfix/**"]
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"    # trigger full deploy on semver tags e.g. v1.2.3
   pull_request:
     branches: [main, develop]
 
@@ -21,6 +23,10 @@ jobs:
       ui:  ${{ steps.filter.outputs.ui }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
       - id: filter
         uses: dorny/paths-filter@v3
         with:
@@ -33,14 +39,26 @@ jobs:
               - 'simplydigitals-aiconnoisseur-ui/**'
               - '!simplydigitals-aiconnoisseur-ui/**.md'
 
+      # On a version tag — force both pipelines to run
+      - name: Force both pipelines on version tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "Version tag detected — both API and UI pipelines will deploy"
+
   # ── Step 2a: Run API pipeline ──────────────────────────────────────────────
   api:
     name: API Pipeline
     needs: detect
-    if: needs.detect.outputs.api == 'true'
+    if: |
+      needs.detect.outputs.api == 'true' ||
+      startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/api-ci.yml
     with:
-      deploy: ${{ github.ref == 'refs/heads/main' }}
+      deploy: >-
+        ${{
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/tags/v')
+        }}
     secrets:
       AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -58,10 +76,16 @@ jobs:
   ui:
     name: UI Pipeline
     needs: detect
-    if: needs.detect.outputs.ui == 'true'
+    if: |
+      needs.detect.outputs.ui == 'true' ||
+      startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/ui-ci.yml
     with:
-      deploy: ${{ github.ref == 'refs/heads/main' }}
+      deploy: >-
+        ${{
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/tags/v')
+        }}
     secrets:
       AWS_ACCESS_KEY_ID:          ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY:      ${{ secrets.AWS_SECRET_ACCESS_KEY }}

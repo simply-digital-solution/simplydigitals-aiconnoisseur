@@ -8,11 +8,11 @@ on:
         type: boolean
         default: false
     secrets:
-      AWS_ACCESS_KEY_ID:     { required: false }
-      AWS_SECRET_ACCESS_KEY: { required: false }
-      AWS_ACCOUNT_ID:        { required: false }
-      AWS_REGION:            { required: false }
-      S3_UI_BUCKET:          { required: false }
+      AWS_ACCESS_KEY_ID:          { required: false }
+      AWS_SECRET_ACCESS_KEY:      { required: false }
+      AWS_ACCOUNT_ID:             { required: false }
+      AWS_REGION:                 { required: false }
+      S3_UI_BUCKET:               { required: false }
       CLOUDFRONT_DISTRIBUTION_ID: { required: false }
 
 defaults:
@@ -48,12 +48,53 @@ jobs:
         continue-on-error: true
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 2. BUILD
+  # 2. RESOLVE VERSION (mirrors the API version from git tags)
+  # ═══════════════════════════════════════════════════════════════════════════
+  version:
+    name: Resolve Version
+    runs-on: ubuntu-latest
+    outputs:
+      version:    ${{ steps.resolve.outputs.version }}
+      is_release: ${{ steps.resolve.outputs.is_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve version
+        id: resolve
+        run: |
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          GIT_TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+
+          if [ -n "$GIT_TAG" ]; then
+            VERSION="${GIT_TAG#v}"
+            IS_RELEASE="true"
+          else
+            LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ -n "$LAST_TAG" ]; then
+              DISTANCE=$(git rev-list ${LAST_TAG}..HEAD --count)
+              BASE="${LAST_TAG#v}"
+              VERSION="${BASE}-dev.${DISTANCE}+${SHORT_SHA}"
+            else
+              VERSION="0.0.0-dev+${SHORT_SHA}"
+            fi
+            IS_RELEASE="false"
+          fi
+
+          echo "version=$VERSION"       >> $GITHUB_OUTPUT
+          echo "is_release=$IS_RELEASE" >> $GITHUB_OUTPUT
+          echo "UI version: $VERSION (release=$IS_RELEASE)"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 3. BUILD
   # ═══════════════════════════════════════════════════════════════════════════
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint]
+    needs: [lint, version]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +111,13 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: ${{ vars.API_URL }}
+          VITE_APP_VERSION: ${{ needs.version.outputs.version }}
+
+      - name: Inject version into build
+        run: |
+          echo "{ \"version\": \"${{ needs.version.outputs.version }}\", \"build\": \"${{ github.sha }}\" }" \
+            > dist/version.json
+          echo "Version file created: dist/version.json"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -78,13 +126,13 @@ jobs:
           retention-days: 7
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 3. DEPLOY TO S3
+  # 4. DEPLOY TO S3
   # Runs only on push to main when deploy input is true
   # ═══════════════════════════════════════════════════════════════════════════
   deploy:
     name: Deploy UI to S3
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, version]
     if: inputs.deploy && github.ref == 'refs/heads/main'
     environment:
       name: production
@@ -102,12 +150,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
 
-      - name: Sync assets to S3 (long cache)
+      - name: Sync hashed assets (long cache)
         run: |
           aws s3 sync dist/ s3://${{ secrets.S3_UI_BUCKET }}/ \
             --delete \
             --cache-control "public,max-age=31536000,immutable" \
-            --exclude "index.html"
+            --exclude "index.html" \
+            --exclude "version.json"
 
       - name: Upload index.html (no cache)
         run: |
@@ -115,14 +164,29 @@ jobs:
             --cache-control "no-cache,no-store,must-revalidate" \
             --content-type "text/html"
 
+      - name: Upload version.json (no cache)
+        run: |
+          aws s3 cp dist/version.json s3://${{ secrets.S3_UI_BUCKET }}/version.json \
+            --cache-control "no-cache,no-store,must-revalidate" \
+            --content-type "application/json"
+
       - name: Invalidate CloudFront cache
         if: secrets.CLOUDFRONT_DISTRIBUTION_ID != ''
         run: |
-          aws cloudfront create-invalidation \
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+            --paths "/*" \
+            --query Invalidation.Id \
+            --output text)
+          echo "CloudFront invalidation started: $INVALIDATION_ID"
 
-      - name: Confirm deployment
+      - name: Print deployment summary
         run: |
-          echo "UI deployed to:"
-          echo "  S3: https://${{ secrets.S3_UI_BUCKET }}.s3-website-ap-southeast-2.amazonaws.com"
+          echo "=================================="
+          echo " UI Deployment Summary"
+          echo "=================================="
+          echo " Version : ${{ needs.version.outputs.version }}"
+          echo " Release : ${{ needs.version.outputs.is_release }}"
+          echo " Bucket  : ${{ secrets.S3_UI_BUCKET }}"
+          echo " URL     : https://${{ secrets.S3_UI_BUCKET }}.s3-website-ap-southeast-2.amazonaws.com"
+          echo "=================================="
