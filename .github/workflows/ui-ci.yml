@@ -1,5 +1,10 @@
 name: UI CI
 
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
 on:
   workflow_call:
     inputs:
