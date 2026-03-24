@@ -17,7 +17,7 @@
 
 set -euo pipefail
 
-AWS_REGION="${AWS_REGION:-ap-southeast-1}"
+AWS_REGION="${AWS_REGION:-ap-southeast-2}"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_REPO="mlapi"
 LAMBDA_NAME="mlapi-prod"

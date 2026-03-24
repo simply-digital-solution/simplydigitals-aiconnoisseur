@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     FACEBOOK_APP_SECRET: str = ""
 
     # ── AWS (optional — only needed for cloud deployments) ─────────────────
-    AWS_REGION: str = "ap-southeast-1"
+    AWS_REGION: str = "ap-southeast-2"
     S3_BUCKET_NAME: str = ""
 
     @field_validator("SECRET_KEY", mode="before")
