@@ -141,7 +141,7 @@ jobs:
     if: inputs.deploy && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: "https://${{ secrets.S3_UI_BUCKET }}.s3-website-ap-southeast-2.amazonaws.com"
+      url: "https://${{ vars.S3_UI_BUCKET }}.s3-website-ap-southeast-2.amazonaws.com"
     steps:
       - uses: actions/download-artifact@v4
         with:
