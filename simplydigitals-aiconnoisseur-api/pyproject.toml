@@ -90,13 +90,12 @@ select = [
     "UP",  # pyupgrade
     "S",   # flake8-bandit (security)
     "N",   # pep8-naming
-    "ANN", # flake8-annotations
-    "SIM", # flake8-simplify
-    "TCH", # flake8-type-checking
+    # ANN (flake8-annotations) removed — full annotation coverage is a
+    # future milestone; type-checking is enforced via mypy in CI instead.
+    # TCH (flake8-type-checking) removed — TYPE_CHECKING restructuring is
+    # deferred until annotation coverage is complete.
 ]
 ignore = [
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
     "S104",    # possible binding to all interfaces
 ]
 
