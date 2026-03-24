@@ -23,7 +23,7 @@ def before_all(ctx: Context) -> None:
     from app.main import create_app  # noqa: PLC0415
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
-    SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    session_local = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     # Synchronously create tables once before all scenarios
     async def _init() -> None:
@@ -35,7 +35,7 @@ def before_all(ctx: Context) -> None:
     app = create_app()
 
     async def _override_db():  # type: ignore[return]
-        async with SessionLocal() as session:
+        async with session_local() as session:
             try:
                 yield session
                 await session.commit()
