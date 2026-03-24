@@ -12,15 +12,19 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   gate:
     name: Quality Gate
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SECRET_KEY: pr-gate-secret-key-at-least-32-chars!!
+      SECRET_KEY: "pr-gate-secret-key-at-least-32-chars!!"
       ENVIRONMENT: testing
-      DATABASE_URL: sqlite+aiosqlite:///:memory:
+      DATABASE_URL: "sqlite+aiosqlite:///:memory:"
 
     steps:
       - uses: actions/checkout@v4
