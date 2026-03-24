@@ -78,7 +78,7 @@ async def forecast(
 
     forecast_list = [
         {"date": str(d.date()), "predicted_value": round(float(v), 4)}
-        for d, v in zip(future_dates, future_values)
+        for d, v in zip(future_dates, future_values, strict=False)
     ]
 
     return ForecastResponse(

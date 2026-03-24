@@ -33,8 +33,8 @@ async def get_current_user(
     try:
         payload = decode_token(credentials.credentials, expected_type="access")
         user_id: str = payload["sub"]
-    except (JWTError, KeyError):
-        raise credentials_exception
+    except (JWTError, KeyError) as exc:
+        raise credentials_exception from exc
 
     user = await UserService(db).get_by_id(user_id)
     if not user or not user.is_active:

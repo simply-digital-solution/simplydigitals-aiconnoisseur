@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import csv
 import io
-import tempfile
-from pathlib import Path
 
 import pytest
 from httpx import AsyncClient

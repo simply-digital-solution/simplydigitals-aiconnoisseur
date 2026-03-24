@@ -7,21 +7,26 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared.base import Base, new_uuid, utcnow
 
+if TYPE_CHECKING:
+    from app.modules.auth.models import User
+    from app.modules.datasets.models import Dataset
 
-class ModelStatus(str, enum.Enum):
+
+class ModelStatus(enum.StrEnum):
     PENDING  = "pending"
     TRAINING = "training"
     READY    = "ready"
     FAILED   = "failed"
 
 
-class AlgorithmType(str, enum.Enum):
+class AlgorithmType(enum.StrEnum):
     CLASSIFICATION = "classification"
     REGRESSION     = "regression"
     CLUSTERING     = "clustering"
@@ -49,5 +54,5 @@ class MLModel(Base):
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
 
-    owner: Mapped["User"] = relationship("User", back_populates="ml_models")  # type: ignore[name-defined]
-    dataset: Mapped["Dataset"] = relationship("Dataset", back_populates="ml_models")  # type: ignore[name-defined]
+    owner: Mapped[User] = relationship("User", back_populates="ml_models")
+    dataset: Mapped[Dataset] = relationship("Dataset", back_populates="ml_models")

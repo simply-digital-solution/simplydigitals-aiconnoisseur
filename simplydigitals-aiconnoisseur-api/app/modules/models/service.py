@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ml.pipeline import MLPipeline
 from app.modules.datasets.models import Dataset
 from app.modules.models.models import AlgorithmType, MLModel, ModelStatus
 from app.modules.models.schemas import TrainRequest
-from app.ml.pipeline import MLPipeline
 from app.shared.config import get_settings
 from app.shared.logging import get_logger
 

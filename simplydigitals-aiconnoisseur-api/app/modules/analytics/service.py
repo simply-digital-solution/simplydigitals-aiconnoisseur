@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -79,5 +80,5 @@ class AnalyticsService:
         future_values = model.predict(future_t)
         return [
             {"date": str(d.date()), "predicted_value": round(float(v), 4)}
-            for d, v in zip(future_dates, future_values)
+            for d, v in zip(future_dates, future_values, strict=False)
         ]

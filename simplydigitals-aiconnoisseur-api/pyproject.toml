@@ -96,11 +96,14 @@ select = [
     # deferred until annotation coverage is complete.
 ]
 ignore = [
-    "S104",    # possible binding to all interfaces
+    "S104",  # possible binding to all interfaces
+    "B008",  # FastAPI Depends/File/Form calls in default args — intentional DI pattern
+    "S105",  # possible hardcoded password — false-positive on token_type = "bearer"
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "ANN"]  # Allow assert and missing annotations in tests
+"tests/*" = ["S101", "S106", "S311"]  # assert + hardcoded pwd/random OK in tests
+"app/ml/pipeline.py" = ["N806"]  # X, X_train, X_test, X_scaled — standard ML naming
 
 [tool.black]
 line-length = 100

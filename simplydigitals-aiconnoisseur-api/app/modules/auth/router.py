@@ -53,7 +53,10 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=t("auth.account_disabled"))
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=t("auth.account_disabled"),
+        )
     logger.info("user_login", user_id=user.id, provider="local")
     return TokenResponse(
         access_token=create_access_token(user.id),
@@ -77,7 +80,10 @@ async def refresh(
         ) from exc
     user = await UserService(db).get_by_id(claims["sub"])
     if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=t("auth.user_not_found"))
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=t("auth.user_not_found"),
+        )
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
@@ -94,7 +100,10 @@ async def google_login(
     profile = await verify_google_token(payload.id_token, t)
     user = await UserService(db).get_or_create_oauth_user(profile, AuthProvider.GOOGLE)
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=t("auth.account_disabled"))
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=t("auth.account_disabled"),
+        )
     logger.info("user_login", user_id=user.id, provider="google")
     return TokenResponse(
         access_token=create_access_token(user.id),
@@ -112,7 +121,10 @@ async def facebook_login(
     profile = await verify_facebook_token(payload.access_token, t)
     user = await UserService(db).get_or_create_oauth_user(profile, AuthProvider.FACEBOOK)
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=t("auth.account_disabled"))
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=t("auth.account_disabled"),
+        )
     logger.info("user_login", user_id=user.id, provider="facebook")
     return TokenResponse(
         access_token=create_access_token(user.id),

@@ -61,7 +61,11 @@ _CLUSTERERS = {
 class MLPipeline:
     """Encapsulates feature prep, training, evaluation, and persistence."""
 
-    def __init__(self, algorithm: AlgorithmType, hyperparameters: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self,
+        algorithm: AlgorithmType,
+        hyperparameters: dict[str, Any] | None = None,
+    ) -> None:
         self.algorithm = algorithm
         self.hyperparameters: dict[str, Any] = hyperparameters or {}
         self.model: Any = None
@@ -124,7 +128,7 @@ class MLPipeline:
         logger.info("model_saved", path=path)
 
     @classmethod
-    def load(cls, path: str, algorithm: AlgorithmType) -> "MLPipeline":
+    def load(cls, path: str, algorithm: AlgorithmType) -> MLPipeline:
         artefact = joblib.load(path)
         pipeline = cls(algorithm)
         pipeline.model = artefact["model"]
@@ -150,7 +154,10 @@ class MLPipeline:
             preds = self.model.predict(X_test)
             return {
                 "accuracy": round(float(accuracy_score(y_test_enc, preds)), 4),
-                "f1_weighted": round(float(f1_score(y_test_enc, preds, average="weighted", zero_division=0)), 4),
+                "f1_weighted": round(
+                    float(f1_score(y_test_enc, preds, average="weighted", zero_division=0)),
+                    4,
+                ),
             }
 
         # Regression
@@ -170,7 +177,11 @@ class MLPipeline:
         n_clusters = self.hyperparameters.get("n_clusters", 3)
         self.model = KMeans(n_clusters=n_clusters, random_state=42, n_init="auto")
         self.model.fit(X)
-        score = float(silhouette_score(X, self.model.labels_)) if len(set(self.model.labels_)) > 1 else 0.0
+        score = (
+            float(silhouette_score(X, self.model.labels_))
+            if len(set(self.model.labels_)) > 1
+            else 0.0
+        )
         return {"silhouette_score": round(score, 4), "n_clusters": n_clusters}
 
     def _encode_categoricals(self, df: pd.DataFrame) -> pd.DataFrame:

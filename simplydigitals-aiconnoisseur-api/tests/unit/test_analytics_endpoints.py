@@ -6,7 +6,6 @@ import csv
 import datetime
 import io
 
-import pytest
 from httpx import AsyncClient
 
 

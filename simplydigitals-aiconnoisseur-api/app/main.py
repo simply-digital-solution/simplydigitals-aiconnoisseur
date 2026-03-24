@@ -31,10 +31,10 @@ from app.shared.database import engine
 from app.shared.logging import configure_logging, get_logger
 
 # ── Module routers ────────────────────────────────────────────────────────────
+from app.modules.analytics.router import router as analytics_router
 from app.modules.auth.router      import router as auth_router
 from app.modules.datasets.router  import router as datasets_router
 from app.modules.models.router    import router as models_router
-from app.modules.analytics.router import router as analytics_router
 
 settings = get_settings()
 logger   = get_logger(__name__)
@@ -92,7 +92,9 @@ def create_app() -> FastAPI:
 
     # ── Rate limiter ──────────────────────────────────────────────────────────
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(  # type: ignore[arg-type]
+        RateLimitExceeded, _rate_limit_exceeded_handler
+    )
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     app.add_middleware(

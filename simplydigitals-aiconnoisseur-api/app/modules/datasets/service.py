@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import pandas as pd
 from fastapi import HTTPException, Request, UploadFile, status
