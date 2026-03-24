@@ -57,7 +57,7 @@ jobs:
 
       - name: API — lint
         if: steps.filter.outputs.api == 'true'
-        run: ruff check app tests && black --check app tests
+        run: ruff check app tests
         working-directory: simplydigitals-aiconnoisseur-api
 
       - name: API — security

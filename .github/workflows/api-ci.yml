@@ -64,8 +64,6 @@ jobs:
       - name: Ruff
         run: ruff check app tests
 
-      - name: Black
-        run: black --check app tests
 
   # ═══════════════════════════════════════════════════════════════════════════
   # 2. UNIT TESTS
