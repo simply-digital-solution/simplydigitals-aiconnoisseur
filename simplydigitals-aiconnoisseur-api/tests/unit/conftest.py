@@ -7,19 +7,23 @@ from __future__ import annotations
 
 import os
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.security import create_access_token, hash_password
 from app.db.session import Base, get_db
 from app.main import create_app
 from app.models.models import User
+from app.core.security import hash_password, create_access_token
 
 # ── Override settings before importing anything that calls get_settings() ──
-os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-chars-long!!")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-chars!!")
 os.environ.setdefault("ENVIRONMENT", "testing")
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+
+# ── Short passwords safe for bcrypt (must be < 72 bytes) ──────────────────
+TEST_PASSWORD = "TestPass123!"   # 12 chars — well within bcrypt 72-byte limit
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -59,7 +63,7 @@ async def client(db_session: AsyncSession) -> AsyncClient:  # type: ignore[retur
 async def test_user(db_session: AsyncSession) -> User:
     user = User(
         email="test@example.com",
-        hashed_password=hash_password("Password123!"),
+        hashed_password=hash_password(TEST_PASSWORD),
         full_name="Test User",
     )
     db_session.add(user)

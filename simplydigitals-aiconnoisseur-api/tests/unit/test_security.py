@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from jose import JWTError
 import pytest
+from jose import JWTError
 
 from app.core.security import (
     create_access_token,
@@ -13,24 +13,28 @@ from app.core.security import (
     verify_password,
 )
 
+# All test passwords must be < 72 bytes (bcrypt hard limit)
+_SHORT_PASSWORD = "correct1!"
+_WRONG_PASSWORD = "wrong1234!"
+
 
 class TestPasswordHashing:
     def test_hash_returns_non_plain_text(self) -> None:
-        hashed = hash_password("mysecret")
-        assert hashed != "mysecret"
+        hashed = hash_password(_SHORT_PASSWORD)
+        assert hashed != _SHORT_PASSWORD
 
     def test_verify_correct_password(self) -> None:
-        hashed = hash_password("correct")
-        assert verify_password("correct", hashed) is True
+        hashed = hash_password(_SHORT_PASSWORD)
+        assert verify_password(_SHORT_PASSWORD, hashed) is True
 
     def test_verify_wrong_password(self) -> None:
-        hashed = hash_password("correct")
-        assert verify_password("wrong", hashed) is False
+        hashed = hash_password(_SHORT_PASSWORD)
+        assert verify_password(_WRONG_PASSWORD, hashed) is False
 
     def test_two_hashes_of_same_password_differ(self) -> None:
         """bcrypt produces unique salts each time."""
-        h1 = hash_password("same")
-        h2 = hash_password("same")
+        h1 = hash_password(_SHORT_PASSWORD)
+        h2 = hash_password(_SHORT_PASSWORD)
         assert h1 != h2
 
 
