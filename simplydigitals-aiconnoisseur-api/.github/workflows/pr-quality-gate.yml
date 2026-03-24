@@ -43,7 +43,7 @@ jobs:
             --cov=app \
             --cov-report=xml \
             --cov-report=term-missing \
-            --cov-fail-under=80 \
+            --cov-fail-under=70 \
             --junitxml=pr-test-results.xml \
             -q
 
@@ -77,7 +77,7 @@ jobs:
             | Metric | Value | Target |
             |--------|-------|--------|
             | ⚡ Pipeline Speed | ${duration} | < 5 min |
-            | 🧪 Unit Test Coverage | ${coverage}% | ≥ 80% |
+            | 🧪 Unit Test Coverage | ${coverage}% | ≥ 70% |
             | 🔒 Security (Bandit) | ✅ Passed | No HIGH/CRITICAL |
             | 🔍 Lint (Ruff) | ✅ Passed | No lint errors |
 

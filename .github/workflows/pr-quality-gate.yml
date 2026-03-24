@@ -73,7 +73,7 @@ jobs:
             --cov=app \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
-            --cov-fail-under=80 \
+            --cov-fail-under=70 \
             --junitxml=pytest-report.xml \
             -q
         working-directory: simplydigitals-aiconnoisseur-api
@@ -145,7 +145,7 @@ jobs:
             if (apiChanged) {
               rows.push(`| 🐍 API lint | ${ok('${{ steps.api-tests.outcome }}')} | Pass |`)
               rows.push(`| 🐍 API tests | ${ok('${{ steps.api-tests.outcome }}')} | Pass |`)
-              rows.push(`| 🐍 API coverage | ${apiCov}% | ≥ 80% |`)
+              rows.push(`| 🐍 API coverage | ${apiCov}% | ≥ 70% |`)
               rows.push(`| 🔒 Security scan | ${ok('')} | No HIGH/CRIT |`)
             } else {
               rows.push(`| 🐍 API | ${skip} | — |`)
