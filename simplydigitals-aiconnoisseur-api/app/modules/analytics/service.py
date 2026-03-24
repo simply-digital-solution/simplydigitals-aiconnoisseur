@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from fastapi import HTTPException, status
 import numpy as np
 import pandas as pd
-from fastapi import HTTPException, status
 from sklearn.linear_model import LinearRegression
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,7 +34,10 @@ class AnalyticsService:
         )
         ds = result.scalar_one_or_none()
         if not ds:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("analytics.not_found"))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=t("analytics.not_found"),
+            )
         return pd.read_csv(ds.file_path)
 
     async def describe(

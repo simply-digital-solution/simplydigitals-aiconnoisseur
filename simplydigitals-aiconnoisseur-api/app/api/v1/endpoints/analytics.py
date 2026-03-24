@@ -4,15 +4,20 @@ from __future__ import annotations
 
 from typing import Any
 
-import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.models.models import Dataset, User
-from app.schemas.schemas import AnalyticsRequest, CorrelationResponse, ForecastRequest, ForecastResponse
+from app.schemas.schemas import (
+    AnalyticsRequest,
+    CorrelationResponse,
+    ForecastRequest,
+    ForecastResponse,
+)
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 

@@ -6,9 +6,9 @@ import csv
 import os
 import tempfile
 
-import numpy as np
 from behave import given, then, when  # type: ignore[import-untyped]
 from behave.runner import Context  # type: ignore[import-untyped]
+import numpy as np
 
 
 def _write_classification_csv(path: str, n: int = 150) -> None:

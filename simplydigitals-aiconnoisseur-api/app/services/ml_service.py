@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 from typing import Any
 
-import pandas as pd
 from fastapi import HTTPException, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -70,7 +70,9 @@ class MLModelService:
             pipeline.save(artefact_path)
 
             ml_model.status = ModelStatus.READY
-            ml_model.metrics = {k: v for k, v in metrics.items() if k != "training_duration_seconds"}
+            ml_model.metrics = {
+                k: v for k, v in metrics.items() if k != "training_duration_seconds"
+            }
             ml_model.training_duration_seconds = metrics.get("training_duration_seconds")
             ml_model.artefact_path = artefact_path
 
@@ -89,7 +91,10 @@ class MLModelService:
         if ml_model.status != ModelStatus.READY:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Model is not ready")
         if not ml_model.artefact_path or not ml_model.feature_columns:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Model artefact missing")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Model artefact missing",
+            )
 
         pipeline = MLPipeline.load(ml_model.artefact_path, ml_model.algorithm)
         return pipeline.predict(data, ml_model.feature_columns)

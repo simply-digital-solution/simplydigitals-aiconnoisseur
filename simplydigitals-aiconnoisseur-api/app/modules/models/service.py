@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Callable
+import os
 from typing import Any
 
-import pandas as pd
 from fastapi import HTTPException, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,7 +56,10 @@ class MLModelService:
         )
         dataset = ds_result.scalar_one_or_none()
         if not dataset:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("datasets.not_found"))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=t("datasets.not_found"),
+            )
         ml_model = MLModel(
             name=payload.name,
             algorithm=payload.algorithm,
@@ -77,7 +80,9 @@ class MLModelService:
             artefact_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{ml_model.id}.joblib")
             pipeline.save(artefact_path)
             ml_model.status = ModelStatus.READY
-            ml_model.metrics = {k: v for k, v in metrics.items() if k != "training_duration_seconds"}
+            ml_model.metrics = {
+                k: v for k, v in metrics.items() if k != "training_duration_seconds"
+            }
             ml_model.training_duration_seconds = metrics.get("training_duration_seconds")
             ml_model.artefact_path = artefact_path
             logger.info("training_complete", model_id=ml_model.id)
@@ -99,9 +104,15 @@ class MLModelService:
     ) -> list[Any]:
         ml_model = await self.get(model_id, owner_id, t)
         if ml_model.status != ModelStatus.READY:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=t("models.not_ready"))
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=t("models.not_ready"),
+            )
         if not ml_model.artefact_path or not ml_model.feature_columns:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=t("models.artefact_missing"))
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=t("models.artefact_missing"),
+            )
         pipeline = MLPipeline.load(ml_model.artefact_path, ml_model.algorithm)
         return pipeline.predict(data, ml_model.feature_columns)
 

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import os
-import uuid
 from collections.abc import Callable
+import os
 from typing import Any
+import uuid
 
-import pandas as pd
 from fastapi import HTTPException, Request, UploadFile, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,7 +108,10 @@ class DatasetService:
         )
         dataset = result.scalar_one_or_none()
         if not dataset:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("datasets.not_found"))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=t("datasets.not_found"),
+            )
         return dataset
 
     async def delete(

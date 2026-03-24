@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
 from jose import JWTError
+import pytest
 
 from app.core.security import (
     create_access_token,

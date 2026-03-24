@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from httpx import AsyncClient
 
 
@@ -47,7 +46,11 @@ class TestLogin:
     async def test_login_success(self, client: AsyncClient) -> None:
         await client.post(
             "/api/v1/auth/register",
-            json={"email": "login@example.com", "password": "Password123!", "full_name": "Login User"},
+            json={
+                "email": "login@example.com",
+                "password": "Password123!",
+                "full_name": "Login User",
+            },
         )
         response = await client.post(
             "/api/v1/auth/login",

@@ -8,7 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.models.models import User
-from app.schemas.schemas import MessageResponse, MLModelRead, PredictRequest, PredictResponse, TrainRequest
+from app.schemas.schemas import (
+    MessageResponse,
+    MLModelRead,
+    PredictRequest,
+    PredictResponse,
+    TrainRequest,
+)
 from app.services.ml_service import MLModelService
 
 router = APIRouter(prefix="/models", tags=["ML Models"])

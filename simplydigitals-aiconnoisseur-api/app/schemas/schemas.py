@@ -2,6 +2,12 @@
 
 Deprecated: import from the relevant module directly.
 """
+from app.modules.analytics.schemas import (   # noqa: F401
+    AnalyticsRequest,
+    CorrelationResponse,
+    ForecastRequest,
+    ForecastResponse,
+)
 from app.modules.auth.schemas import (        # noqa: F401
     FacebookLoginRequest,
     GoogleLoginRequest,
@@ -20,10 +26,4 @@ from app.modules.models.schemas import (      # noqa: F401
     ModelRead,
     PredictRequest,
     TrainRequest,
-)
-from app.modules.analytics.schemas import (   # noqa: F401
-    AnalyticsRequest,
-    CorrelationResponse,
-    ForecastRequest,
-    ForecastResponse,
 )
