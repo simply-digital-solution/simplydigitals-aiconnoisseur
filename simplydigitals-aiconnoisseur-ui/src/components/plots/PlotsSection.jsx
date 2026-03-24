@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react'
 import { useStore } from '../../store'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  ScatterChart, Scatter, LineChart, Line, CartesianGrid,
-  BoxPlot, ComposedChart, Area, Cell, Legend
+  ScatterChart, Scatter, LineChart, CartesianGrid,
+  Area
 } from 'recharts'
 import { BarChart3, TrendingUp, ScatterChart as ScatterIcon, Activity, PieChart } from 'lucide-react'
 
@@ -31,17 +31,6 @@ function buildHistogram(values, bins = 20) {
     bin: (min + i * size).toFixed(2),
     count,
   }))
-}
-
-function buildBoxData(stats) {
-  return {
-    min: stats.min,
-    q1: stats.q1,
-    median: stats.median,
-    q3: stats.q3,
-    max: stats.max,
-    mean: stats.mean,
-  }
 }
 
 const CustomTooltip = ({ active, payload, label }) => {

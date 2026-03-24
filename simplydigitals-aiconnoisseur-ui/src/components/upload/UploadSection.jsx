@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import Papa from 'papaparse'
 import toast from 'react-hot-toast'
-import { Upload, FileText, CheckCircle2, Trash2, ChevronRight, Database, Clock, Hash } from 'lucide-react'
+import { Upload, FileText, CheckCircle2, Trash2, ChevronRight, Database, Hash } from 'lucide-react'
 import { useStore } from '../../store'
 import { datasetApi } from '../../utils/api'
 
@@ -10,7 +10,6 @@ export default function UploadSection() {
   const { setActiveDataset, setParsedData, setActiveSection, datasets, setDatasets } = useStore()
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState(null)
-  const [progress, setProgress] = useState(0)
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0]
@@ -34,7 +33,6 @@ export default function UploadSection() {
   async function handleUpload() {
     if (!preview) return
     setUploading(true)
-    setProgress(0)
     try {
       const fd = new FormData()
       fd.append('name', preview.file.name.replace('.csv', ''))
@@ -49,19 +47,6 @@ export default function UploadSection() {
       toast.error(err.response?.data?.detail || 'Upload failed')
     } finally {
       setUploading(false)
-    }
-  }
-
-  // Load an existing dataset from API
-  async function loadDataset(ds) {
-    try {
-      // We don't have the CSV locally, so fetch the profile
-      const { data } = await datasetApi.profile(ds.id)
-      setActiveDataset(ds)
-      toast.success(`Loaded dataset "${ds.name}"`)
-      setActiveSection('explorer')
-    } catch {
-      toast.error('Could not load dataset')
     }
   }
 

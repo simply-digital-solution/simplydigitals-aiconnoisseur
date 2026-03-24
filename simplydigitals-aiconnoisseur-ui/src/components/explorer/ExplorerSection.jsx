@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useStore, computeCorrelation } from '../../store'
-import { Table2, Hash, Type, AlertCircle, Link2, Search, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Hash, Type, Search, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const TABS = ['Overview', 'Data Types', 'Null Analysis', 'Correlation']
@@ -15,7 +15,6 @@ function corColor(v) {
 
 function corBg(v) {
   const abs = Math.abs(v)
-  const alpha = Math.round(abs * 80 + 10)
   if (v > 0) return `rgba(0,201,138,${abs * 0.5})`
   return `rgba(244,63,94,${abs * 0.5})`
 }
@@ -42,7 +41,6 @@ export default function ExplorerSection() {
 
   // Summary cards
   const numericCount = columns.filter((c) => columnStats[c]?.isNumeric).length
-  const categoricalCount = columns.length - numericCount
   const nullyCols = columns.filter((c) => columnStats[c]?.nullCount > 0).length
 
   if (!activeDataset) return null
