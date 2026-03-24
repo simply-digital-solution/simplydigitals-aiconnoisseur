@@ -100,6 +100,7 @@ ignore = [
     "B008",  # FastAPI Depends/File/Form calls in default args — intentional DI pattern
     "S105",  # possible hardcoded password — false-positive on token_type = "bearer"
     "I001",  # import block is un-sorted or un-formatted — managed separately
+    "F401",  # imported but unused — re-exports and shim modules use noqa where needed
 ]
 
 [tool.ruff.lint.isort]
