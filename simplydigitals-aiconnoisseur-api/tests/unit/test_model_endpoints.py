@@ -12,14 +12,18 @@ def _clf_csv(rows: int = 150) -> bytes:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["feat_a", "feat_b", "label"])
+
     import random
+
     rng = random.Random(42)
     for _ in range(rows):
-        writer.writerow([
-            round(rng.gauss(0, 1), 4),
-            round(rng.gauss(5, 2), 4),
-            rng.choice(["cat", "dog"]),
-        ])
+        writer.writerow(
+            [
+                round(rng.gauss(0, 1), 4),
+                round(rng.gauss(5, 2), 4),
+                rng.choice(["cat", "dog"]),
+            ]
+        )
     return buf.getvalue().encode()
 
 
@@ -27,7 +31,9 @@ def _reg_csv(rows: int = 150) -> bytes:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["x", "y"])
+
     import random
+
     rng = random.Random(7)
     for i in range(rows):
         x = i / 10.0
@@ -164,10 +170,12 @@ class TestModelPrediction:
 
         resp = await client.post(
             f"/api/v1/models/{model_id}/predict",
-            json={"data": [
-                {"feat_a": 0.5, "feat_b": 4.0},
-                {"feat_a": -1.0, "feat_b": 6.0},
-            ]},
+            json={
+                "data": [
+                    {"feat_a": 0.5, "feat_b": 4.0},
+                    {"feat_a": -1.0, "feat_b": 6.0},
+                ]
+            },
             headers=auth_headers,
         )
         assert resp.status_code == 200

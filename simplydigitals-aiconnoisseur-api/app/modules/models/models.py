@@ -20,16 +20,16 @@ if TYPE_CHECKING:
 
 
 class ModelStatus(enum.StrEnum):
-    PENDING  = "pending"
+    PENDING = "pending"
     TRAINING = "training"
-    READY    = "ready"
-    FAILED   = "failed"
+    READY = "ready"
+    FAILED = "failed"
 
 
 class AlgorithmType(enum.StrEnum):
     CLASSIFICATION = "classification"
-    REGRESSION     = "regression"
-    CLUSTERING     = "clustering"
+    REGRESSION = "regression"
+    CLUSTERING = "clustering"
 
 
 class MLModel(Base):

@@ -15,8 +15,8 @@ from app.shared.base import Base, new_uuid, utcnow
 
 
 class AuthProvider(enum.StrEnum):
-    LOCAL    = "local"
-    GOOGLE   = "google"
+    LOCAL = "local"
+    GOOGLE = "google"
     FACEBOOK = "facebook"
 
 

@@ -14,7 +14,9 @@ def _csv_bytes(rows: int = 50) -> bytes:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["feat_a", "feat_b", "label"])
+
     import random
+
     rng = random.Random(0)
     for _ in range(rows):
         writer.writerow([rng.gauss(0, 1), rng.gauss(5, 2), rng.choice(["yes", "no"])])
