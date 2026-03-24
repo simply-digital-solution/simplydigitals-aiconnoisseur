@@ -57,9 +57,10 @@ async def predict(
     request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> list[Any]:
+) -> dict[str, Any]:
     t = get_translator(request)
-    return await MLModelService(db).predict(model_id, current_user.id, payload.data, t)
+    predictions = await MLModelService(db).predict(model_id, current_user.id, payload.data, t)
+    return {"predictions": predictions, "prediction_count": len(predictions)}
 
 
 @router.delete("/{model_id}", status_code=status.HTTP_204_NO_CONTENT)

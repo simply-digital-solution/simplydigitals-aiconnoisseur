@@ -130,7 +130,7 @@ class TestDatasetDelete:
         delete_resp = await client.delete(
             f"/api/v1/datasets/{ds_id}", headers=auth_headers
         )
-        assert delete_resp.status_code == 200
+        assert delete_resp.status_code == 204
 
         get_resp = await client.get(f"/api/v1/datasets/{ds_id}", headers=auth_headers)
         assert get_resp.status_code == 404

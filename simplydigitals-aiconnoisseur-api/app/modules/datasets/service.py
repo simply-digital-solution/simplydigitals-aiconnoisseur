@@ -65,9 +65,19 @@ class DatasetService:
         request: Request,
         t: Callable[..., str] = _noop,
     ) -> Dataset:
+        if file.content_type not in ("text/csv", "application/csv", "application/vnd.ms-excel"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=t("datasets.invalid_type"),
+            )
         os.makedirs(settings.MODEL_ARTEFACT_DIR, exist_ok=True)
         file_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{uuid.uuid4()}.csv")
         content = await file.read()
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=t("datasets.empty_file"),
+            )
         with open(file_path, "wb") as f:
             f.write(content)
         try:
@@ -75,7 +85,7 @@ class DatasetService:
         except Exception as exc:
             os.remove(file_path)
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=t("datasets.parse_error", detail=str(exc)),
             ) from exc
         dataset = Dataset(
