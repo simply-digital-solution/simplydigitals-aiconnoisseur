@@ -102,6 +102,7 @@ ignore = [
     "I001",  # import block is un-sorted or un-formatted — managed separately
     "F401",  # imported but unused — re-exports and shim modules use noqa where needed
     "UP035", # deprecated typing imports — collections.abc migration deferred
+    "UP033", # use @functools.cache instead of lru_cache(maxsize=None) — deferred
 ]
 
 [tool.ruff.lint.isort]
