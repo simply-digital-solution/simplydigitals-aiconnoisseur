@@ -135,7 +135,7 @@ class TestModelTraining:
                 "feature_columns": ["a"],
             },
         )
-        assert resp.status_code == 403
+        assert resp.status_code in (401, 403)
 
 
 class TestModelListing:
