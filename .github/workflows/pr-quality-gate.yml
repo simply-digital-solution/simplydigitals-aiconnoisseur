@@ -106,7 +106,7 @@ jobs:
 
       - name: UI — lint
         if: steps.filter.outputs.ui == 'true'
-        run: npx eslint src --ext .js,.jsx --max-warnings 0
+        run: npx eslint . --max-warnings 0
         working-directory: simplydigitals-aiconnoisseur-ui
 
       - name: UI — build

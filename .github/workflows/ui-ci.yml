@@ -45,7 +45,7 @@ jobs:
       - run: npm install
 
       - name: ESLint
-        run: npx eslint src --ext .js,.jsx --max-warnings 0
+        run: npx eslint . --max-warnings 0
         continue-on-error: true
 
       - name: Prettier check
