@@ -101,6 +101,7 @@ ignore = [
     "S105",  # possible hardcoded password — false-positive on token_type = "bearer"
     "I001",  # import block is un-sorted or un-formatted — managed separately
     "F401",  # imported but unused — re-exports and shim modules use noqa where needed
+    "UP035", # deprecated typing imports — collections.abc migration deferred
 ]
 
 [tool.ruff.lint.isort]
