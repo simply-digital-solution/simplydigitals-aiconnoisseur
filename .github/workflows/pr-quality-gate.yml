@@ -97,11 +97,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: simplydigitals-aiconnoisseur-ui/package-lock.json
+          cache-dependency-path: simplydigitals-aiconnoisseur-ui/package.json
 
       - name: UI — install
         if: steps.filter.outputs.ui == 'true'
-        run: npm ci
+        run: npm install
         working-directory: simplydigitals-aiconnoisseur-ui
 
       - name: UI — lint
