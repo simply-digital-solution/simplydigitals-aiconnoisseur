@@ -6,7 +6,6 @@ import csv
 import datetime
 import io
 
-import pytest
 from httpx import AsyncClient
 
 
@@ -14,7 +13,9 @@ def _numeric_csv(rows: int = 80) -> bytes:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["x", "y", "z"])
+
     import random
+
     rng = random.Random(1)
     for _ in range(rows):
         writer.writerow([round(rng.gauss(0, 1), 4) for _ in range(3)])

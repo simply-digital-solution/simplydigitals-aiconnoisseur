@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
+from fastapi import HTTPException, status
 import numpy as np
 import pandas as pd
-from fastapi import HTTPException, status
 from sklearn.linear_model import LinearRegression
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +34,10 @@ class AnalyticsService:
         )
         ds = result.scalar_one_or_none()
         if not ds:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("analytics.not_found"))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=t("analytics.not_found"),
+            )
         return pd.read_csv(ds.file_path)
 
     async def describe(
@@ -79,5 +83,5 @@ class AnalyticsService:
         future_values = model.predict(future_t)
         return [
             {"date": str(d.date()), "predicted_value": round(float(v), 4)}
-            for d, v in zip(future_dates, future_values)
+            for d, v in zip(future_dates, future_values, strict=False)
         ]

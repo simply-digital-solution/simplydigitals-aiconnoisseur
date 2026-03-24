@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import os
+from typing import Any
 import uuid
-from typing import Any, Callable
 
-import pandas as pd
 from fastapi import HTTPException, Request, UploadFile, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -64,9 +65,19 @@ class DatasetService:
         request: Request,
         t: Callable[..., str] = _noop,
     ) -> Dataset:
+        if file.content_type not in ("text/csv", "application/csv", "application/vnd.ms-excel"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=t("datasets.invalid_type"),
+            )
         os.makedirs(settings.MODEL_ARTEFACT_DIR, exist_ok=True)
         file_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{uuid.uuid4()}.csv")
         content = await file.read()
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=t("datasets.empty_file"),
+            )
         with open(file_path, "wb") as f:
             f.write(content)
         try:
@@ -74,7 +85,7 @@ class DatasetService:
         except Exception as exc:
             os.remove(file_path)
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=t("datasets.parse_error", detail=str(exc)),
             ) from exc
         dataset = Dataset(
@@ -107,7 +118,10 @@ class DatasetService:
         )
         dataset = result.scalar_one_or_none()
         if not dataset:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=t("datasets.not_found"))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=t("datasets.not_found"),
+            )
         return dataset
 
     async def delete(

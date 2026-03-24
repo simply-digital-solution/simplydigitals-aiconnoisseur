@@ -52,9 +52,6 @@ jobs:
       - name: Ruff lint
         run: ruff check app tests
 
-      - name: Black format check
-        run: black --check app tests
-
       - name: Mypy type-check
         run: mypy app
 

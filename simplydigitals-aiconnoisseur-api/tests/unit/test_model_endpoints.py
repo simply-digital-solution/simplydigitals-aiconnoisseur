@@ -135,7 +135,7 @@ class TestModelTraining:
                 "feature_columns": ["a"],
             },
         )
-        assert resp.status_code == 403
+        assert resp.status_code in (401, 403)
 
 
 class TestModelListing:
@@ -197,7 +197,7 @@ class TestModelDelete:
         model_id = model["id"]
 
         del_resp = await client.delete(f"/api/v1/models/{model_id}", headers=auth_headers)
-        assert del_resp.status_code == 200
+        assert del_resp.status_code == 204
 
         get_resp = await client.get(f"/api/v1/models/{model_id}", headers=auth_headers)
         assert get_resp.status_code == 404

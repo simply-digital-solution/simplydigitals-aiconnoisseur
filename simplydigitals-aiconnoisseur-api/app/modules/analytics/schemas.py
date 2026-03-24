@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class _Base(BaseModel):
@@ -25,7 +25,7 @@ class ForecastRequest(_Base):
     dataset_id: str
     date_column: str
     value_column: str
-    periods: int = 30
+    periods: int = Field(default=30, ge=1)
 
 
 class ForecastResponse(_Base):

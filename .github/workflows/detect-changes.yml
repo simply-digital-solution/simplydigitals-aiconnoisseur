@@ -25,7 +25,7 @@ jobs:
       ui:       ${{ steps.filter.outputs.ui }}
       infra:    ${{ steps.filter.outputs.infra }}
       ci:       ${{ steps.filter.outputs.ci }}
-      any:      ${{ steps.filter.outputs.api == 'true' || steps.filter.outputs.ui == 'true' }}
+      any:      ${{ steps.any.outputs.any }}
 
     steps:
       - uses: actions/checkout@v4
@@ -48,3 +48,12 @@ jobs:
               - 'simplydigitals-aiconnoisseur-api/scripts/**'
             ci:
               - '.github/workflows/**'
+
+      - name: Compute any-changed flag
+        id: any
+        run: |
+          if [ "${{ steps.filter.outputs.api }}" = "true" ] || [ "${{ steps.filter.outputs.ui }}" = "true" ]; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+          fi

@@ -22,4 +22,5 @@ def new_uuid() -> str:
 
 class Base(DeclarativeBase):
     """Single declarative base shared across all modules."""
+
     pass

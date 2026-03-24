@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -34,8 +33,20 @@ def _make_clustering_df(n: int = 150) -> pd.DataFrame:
     rng = np.random.default_rng(42)
     return pd.DataFrame(
         {
-            "a": np.concatenate([rng.normal(0, 0.5, n // 3), rng.normal(5, 0.5, n // 3), rng.normal(10, 0.5, n // 3)]),
-            "b": np.concatenate([rng.normal(0, 0.5, n // 3), rng.normal(5, 0.5, n // 3), rng.normal(10, 0.5, n // 3)]),
+            "a": np.concatenate(
+                [
+                    rng.normal(0, 0.5, n // 3),
+                    rng.normal(5, 0.5, n // 3),
+                    rng.normal(10, 0.5, n // 3),
+                ]
+            ),
+            "b": np.concatenate(
+                [
+                    rng.normal(0, 0.5, n // 3),
+                    rng.normal(5, 0.5, n // 3),
+                    rng.normal(10, 0.5, n // 3),
+                ]
+            ),
         }
     )
 

@@ -18,6 +18,7 @@ class UserService:
         existing = await self.get_by_email(payload.email)
         if existing:
             from fastapi import HTTPException, status
+
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered",

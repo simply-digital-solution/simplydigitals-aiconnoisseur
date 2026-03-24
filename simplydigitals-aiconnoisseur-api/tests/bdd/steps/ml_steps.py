@@ -6,9 +6,9 @@ import csv
 import os
 import tempfile
 
-import numpy as np
 from behave import given, then, when  # type: ignore[import-untyped]
 from behave.runner import Context  # type: ignore[import-untyped]
+import numpy as np
 
 
 def _write_classification_csv(path: str, n: int = 150) -> None:
@@ -17,11 +17,13 @@ def _write_classification_csv(path: str, n: int = 150) -> None:
         writer = csv.writer(f)
         writer.writerow(["feat_a", "feat_b", "label"])
         for _ in range(n):
-            writer.writerow([
-                round(float(rng.normal()), 4),
-                round(float(rng.normal(5, 2)), 4),
-                rng.choice(["cat", "dog"]),
-            ])
+            writer.writerow(
+                [
+                    round(float(rng.normal()), 4),
+                    round(float(rng.normal(5, 2)), 4),
+                    rng.choice(["cat", "dog"]),
+                ]
+            )
 
 
 def _write_regression_csv(path: str, n: int = 150) -> None:

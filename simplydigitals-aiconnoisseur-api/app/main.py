@@ -31,14 +31,14 @@ from app.shared.database import engine
 from app.shared.logging import configure_logging, get_logger
 
 # ── Module routers ────────────────────────────────────────────────────────────
-from app.modules.auth.router      import router as auth_router
-from app.modules.datasets.router  import router as datasets_router
-from app.modules.models.router    import router as models_router
 from app.modules.analytics.router import router as analytics_router
+from app.modules.auth.router import router as auth_router
+from app.modules.datasets.router import router as datasets_router
+from app.modules.models.router import router as models_router
 
 settings = get_settings()
-logger   = get_logger(__name__)
-limiter  = Limiter(
+logger = get_logger(__name__)
+limiter = Limiter(
     key_func=get_remote_address,
     default_limits=[f"{settings.RATE_LIMIT_PER_MINUTE}/minute"],
 )
@@ -50,9 +50,9 @@ def _import_module_models() -> None:
     This must run before Base.metadata.create_all() or alembic upgrade.
     Add a new import here whenever a new module introduces ORM models.
     """
-    import app.modules.auth.models      # noqa: F401
+    import app.modules.auth.models  # noqa: F401
     import app.modules.datasets.models  # noqa: F401
-    import app.modules.models.models    # noqa: F401
+    import app.modules.models.models  # noqa: F401
     # analytics has no ORM models — it is read-only
 
 
@@ -66,6 +66,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
     # In production always use: alembic upgrade head
     if not settings.is_production:
         from app.shared.base import Base
+
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
@@ -85,14 +86,16 @@ def create_app() -> FastAPI:
             "Authenticate via POST /api/v1/auth/login to obtain a JWT bearer token."
         ),
         openapi_url="/openapi.json" if not settings.is_production else None,
-        docs_url="/docs"            if not settings.is_production else None,
-        redoc_url="/redoc"          if not settings.is_production else None,
+        docs_url="/docs" if not settings.is_production else None,
+        redoc_url="/redoc" if not settings.is_production else None,
         lifespan=lifespan,
     )
 
     # ── Rate limiter ──────────────────────────────────────────────────────────
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(  # type: ignore[arg-type]
+        RateLimitExceeded, _rate_limit_exceeded_handler
+    )
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     app.add_middleware(
@@ -107,6 +110,7 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def content_language_header(request: Request, call_next):  # type: ignore[no-untyped-def]
         from app.shared.i18n.translator import get_locale
+
         response = await call_next(request)
         response.headers["Content-Language"] = get_locale(request)
         return response
@@ -115,12 +119,12 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def security_headers(request: Request, call_next):  # type: ignore[no-untyped-def]
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"]  = "nosniff"
-        response.headers["X-Frame-Options"]          = "DENY"
-        response.headers["X-XSS-Protection"]         = "1; mode=block"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
-        response.headers["Referrer-Policy"]           = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"]        = "geolocation=(), microphone=()"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
         return response
 
     # ── Validation error handler ──────────────────────────────────────────────
@@ -135,9 +139,9 @@ def create_app() -> FastAPI:
 
     # ── Module routers ────────────────────────────────────────────────────────
     prefix = settings.API_V1_PREFIX  # "/api/v1"
-    app.include_router(auth_router,      prefix=prefix)
-    app.include_router(datasets_router,  prefix=prefix)
-    app.include_router(models_router,    prefix=prefix)
+    app.include_router(auth_router, prefix=prefix)
+    app.include_router(datasets_router, prefix=prefix)
+    app.include_router(models_router, prefix=prefix)
     app.include_router(analytics_router, prefix=prefix)
 
     # ── Prometheus metrics ────────────────────────────────────────────────────

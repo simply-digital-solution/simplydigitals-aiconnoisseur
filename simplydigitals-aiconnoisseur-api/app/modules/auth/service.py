@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -14,7 +14,13 @@ from app.shared.security import hash_password, verify_password
 
 
 class OAuthProfile:
-    def __init__(self, provider_id: str, email: str, full_name: str, avatar_url: str | None = None) -> None:
+    def __init__(
+        self,
+        provider_id: str,
+        email: str,
+        full_name: str,
+        avatar_url: str | None = None,
+    ) -> None:
         self.provider_id = provider_id
         self.email = email
         self.full_name = full_name
@@ -53,7 +59,10 @@ class UserService:
 
     async def get_or_create_oauth_user(self, profile: OAuthProfile, provider: AuthProvider) -> User:
         result = await self.db.execute(
-            select(User).where(User.auth_provider == provider, User.oauth_provider_id == profile.provider_id)
+            select(User).where(
+                User.auth_provider == provider,
+                User.oauth_provider_id == profile.provider_id,
+            )
         )
         user = result.scalar_one_or_none()
         if user:

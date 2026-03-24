@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import pandas as pd
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,7 @@ settings = get_settings()
 
 _UPLOAD_DIR = Path("./uploads")
 
+
 def _get_client_ip(request: Request) -> str:
     """Extract the real client IP, respecting X-Forwarded-For from trusted proxies."""
     forwarded_for = request.headers.get("X-Forwarded-For")
@@ -28,7 +29,6 @@ def _get_client_ip(request: Request) -> str:
         # X-Forwarded-For may be a comma-separated list; the first entry is the originating client
         return forwarded_for.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
-
 
 
 def _profile_dataframe(df: pd.DataFrame) -> dict:

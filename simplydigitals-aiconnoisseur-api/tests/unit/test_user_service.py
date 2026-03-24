@@ -6,8 +6,8 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.user_service import UserService
 from app.schemas.schemas import UserCreate
+from app.services.user_service import UserService
 
 
 class TestUserService:

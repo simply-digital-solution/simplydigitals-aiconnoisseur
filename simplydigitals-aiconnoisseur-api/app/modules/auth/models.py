@@ -14,9 +14,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.shared.base import Base, new_uuid, utcnow
 
 
-class AuthProvider(str, enum.Enum):
-    LOCAL    = "local"
-    GOOGLE   = "google"
+class AuthProvider(enum.StrEnum):
+    LOCAL = "local"
+    GOOGLE = "google"
     FACEBOOK = "facebook"
 
 

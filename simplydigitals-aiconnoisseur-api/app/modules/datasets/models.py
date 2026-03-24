@@ -6,11 +6,16 @@ Owns: Dataset
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared.base import Base, new_uuid, utcnow
+
+if TYPE_CHECKING:
+    from app.modules.auth.models import User
+    from app.modules.models.models import MLModel
 
 
 class Dataset(Base):
@@ -29,5 +34,5 @@ class Dataset(Base):
     owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
-    owner: Mapped["User"] = relationship("User", back_populates="datasets")  # type: ignore[name-defined]
-    ml_models: Mapped[list] = relationship("MLModel", back_populates="dataset")
+    owner: Mapped[User] = relationship("User", back_populates="datasets")
+    ml_models: Mapped[list[MLModel]] = relationship("MLModel", back_populates="dataset")

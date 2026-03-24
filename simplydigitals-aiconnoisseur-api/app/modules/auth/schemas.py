@@ -44,9 +44,11 @@ class TokenResponse(_Base):
 
 class GoogleLoginRequest(_Base):
     """Google ID token from the Google Sign-In SDK."""
+
     id_token: str
 
 
 class FacebookLoginRequest(_Base):
     """Facebook user access token from the Facebook Login SDK."""
+
     access_token: str

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../../store'
-import { Settings2, Droplets, Scale, Filter, ChevronRight, Check, Info } from 'lucide-react'
+import { Filter, ChevronRight, Check, Info } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const IMPUTE_OPTIONS = [
@@ -52,7 +52,7 @@ function OptionCard({ item, selected, onClick }) {
 
 export default function PreprocessingSection() {
   const {
-    columns, columnStats, activeDataset,
+    columns, columnStats,
     imputeMethod, setImputeMethod,
     scaleMethod, setScaleMethod,
     selectedFeatures, setSelectedFeatures,

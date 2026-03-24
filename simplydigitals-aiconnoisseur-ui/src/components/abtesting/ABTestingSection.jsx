@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useStore } from '../../store'
-import { modelApi } from '../../utils/api'
 import toast from 'react-hot-toast'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
-  LineChart, Line, Legend
+  Legend
 } from 'recharts'
-import { FlaskConical, Play, Trophy, TrendingUp, Zap, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Play, Trophy, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
 
 const ALGORITHMS = [
   {
@@ -33,7 +32,7 @@ const ALGORITHMS = [
 ]
 
 // ── Simulate A/B results locally (when API models not available) ─────────────
-function simulateResults(selectedAlgos, targetCol, features, imputeMethod, scaleMethod) {
+function simulateResults(selectedAlgos) {
   return selectedAlgos.map((algo, i) => {
     const seed = (algo.id.charCodeAt(0) + i * 17) % 100
     const isClassification = algo.type === 'classification'
@@ -122,7 +121,7 @@ function ModelCard({ model, isWinner }) {
 }
 
 export default function ABTestingSection() {
-  const { activeDataset, selectedFeatures, targetColumn, imputeMethod, scaleMethod } = useStore()
+  const { selectedFeatures, targetColumn } = useStore()
   const [selectedAlgos, setSelectedAlgos] = useState([ALGORITHMS[0], ALGORITHMS[1]])
   const [results, setResults] = useState(null)
   const [running, setRunning] = useState(false)
@@ -148,10 +147,10 @@ export default function ABTestingSection() {
     try {
       // Simulate delay for training effect
       await new Promise((r) => setTimeout(r, 1500))
-      const simResults = simulateResults(selectedAlgos, targetColumn, selectedFeatures, imputeMethod, scaleMethod)
+      const simResults = simulateResults(selectedAlgos)
       setResults(simResults)
       toast.success('A/B test complete!')
-    } catch (err) {
+    } catch {
       toast.error('Test failed — check your config')
     } finally {
       setRunning(false)
