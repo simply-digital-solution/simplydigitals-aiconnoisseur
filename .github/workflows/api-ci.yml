@@ -27,9 +27,9 @@ on:
 env:
   PYTHON_VERSION: "3.11"
   WORKING_DIR: simplydigitals-aiconnoisseur-api
-  SECRET_KEY: ci-secret-key-at-least-32-chars-long!!
+  SECRET_KEY: "ci-secret-key-at-least-32-chars-long!!"
   ENVIRONMENT: testing
-  DATABASE_URL: sqlite+aiosqlite:///:memory:
+  DATABASE_URL: "sqlite+aiosqlite:///:memory:"
 
 defaults:
   run:
@@ -190,7 +190,7 @@ jobs:
           context: simplydigitals-aiconnoisseur-api
           push: false
           load: true
-          tags: simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}
+          tags: "simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}"
           build-args: |
             APP_VERSION=${{ needs.version.outputs.version }}
           cache-from: type=gha,scope=api
