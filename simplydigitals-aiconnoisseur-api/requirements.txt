@@ -50,6 +50,7 @@ scipy>=1.13.0              # Required by scikit-learn algorithms
 structlog>=24.1.0
 prometheus-fastapi-instrumentator>=6.1.0
 prometheus-client>=0.20.0  # Required by prometheus-fastapi-instrumentator
+mangum>=0.17.0             # Required for AWS Lambda deployment
 
 # Utilities
 python-dateutil>=2.9.0     # Required by pandas

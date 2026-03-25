@@ -160,6 +160,6 @@ app = create_app()
 # AWS Lambda handler (Mangum wraps the FastAPI ASGI app)
 try:
     from mangum import Mangum
-    handler = Mangum(app, lifespan="off")
+    handler = Mangum(app, lifespan="on")
 except ImportError:
     pass  # mangum not installed in local dev — that is fine
