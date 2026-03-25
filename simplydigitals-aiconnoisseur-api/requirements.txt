@@ -22,7 +22,7 @@ alembic>=1.13.1
 aiosqlite>=0.20.0
 greenlet>=3.0.0            # Required by SQLAlchemy async on all platforms
 psycopg2-binary>=2.9.9     # PostgreSQL driver (production)
-asyncpg>=0.29.0            # Async PostgreSQL driver for SQLAlchemy asyncpg dialect     # PostgreSQL driver (production)
+asyncpg>=0.29.0            # Async PostgreSQL driver for SQLAlchemy asyncpg dialect
 
 # Auth & Security
 python-jose[cryptography]>=3.3.0
