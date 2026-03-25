@@ -1,34 +1,34 @@
 # ─── Build stage ─────────────────────────────────────────────────────────────
-# Use standard python image for building — it has all tools (gcc, etc.)
-FROM python:3.11-slim AS builder
+# Use AWS Lambda Python 3.11 base image for Lambda compatibility
+# This image has GCC 11+ which satisfies NumPy 2.x build requirements
+FROM public.ecr.aws/lambda/python:3.11 AS builder
 
 WORKDIR /build
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+RUN yum update -y && yum install -y gcc gcc-c++ libpq-devel && yum clean all
 
-# Copy metadata and source
 COPY pyproject.toml README.md ./
 COPY app/ app/
 
-# Install the application and all dependencies into /install
-# Use --verbose to see exactly where it fails if it does
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --target /install --verbose .
+# Install dependencies into /install prefix
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --prefix=/install .
 
 # ─── Runtime stage ────────────────────────────────────────────────────────────
-# Use the official AWS Lambda Python image for the final runtime
 FROM public.ecr.aws/lambda/python:3.11 AS runtime
 
-WORKDIR ${LAMBDA_TASK_ROOT}
+WORKDIR /var/task
 
 # Copy installed packages from builder
-COPY --from=builder /install ${LAMBDA_TASK_ROOT}
+COPY --from=builder /install/lib/python3.11/site-packages \
+     /var/task/
 
-# Copy application source explicitly to ensure it is in the task root
-COPY app/ ${LAMBDA_TASK_ROOT}/app/
+# Copy application source
+COPY app/ ./app/
 
-# Set the handler to Mangum
+# Artefact directory (Lambda can write to /tmp only)
+RUN mkdir -p /tmp/artefacts
+
+# Lambda handler — Mangum wraps FastAPI for Lambda
 CMD ["app.main.handler"]
