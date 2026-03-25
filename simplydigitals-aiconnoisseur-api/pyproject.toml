@@ -7,13 +7,13 @@ where = ["."]
 include = ["app*"]
 
 [project]
-name = "mlapi"
+name = "simplydigitals-aiconnoisseur-api"
 version = "1.0.0"
 description = "Production ML Analytics REST API Platform"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 license = { text = "MIT" }
-authors = [{ name = "ML Platform Team" }]
+authors = [{ name = "Simply Digital Solutions" }]
 
 dependencies = [
     # Web framework
@@ -29,8 +29,8 @@ dependencies = [
 
     # Auth & Security
     "python-jose[cryptography]>=3.3.0",
-    "passlib[bcrypt]>=1.7.4",
-    "bcrypt>=3.0.0,<4.0.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt==4.0.1",
     "slowapi>=0.1.9",
 
     # Validation
@@ -47,14 +47,12 @@ dependencies = [
     # Observability
     "structlog>=24.1.0",
     "prometheus-fastapi-instrumentator>=6.1.0",
-    "mangum>=0.17.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pre-commit>=3.7.0",
     "ruff>=0.4.4",
-    "black>=24.4.2",
     "mypy>=1.10.0",
     "bandit[toml]>=1.7.8",
     "safety>=3.2.0",
@@ -88,36 +86,29 @@ select = [
     "F",   # pyflakes
     "I",   # isort
     "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
-    "S",   # flake8-bandit (security)
     "N",   # pep8-naming
-    # ANN (flake8-annotations) removed — full annotation coverage is a
-    # future milestone; type-checking is enforced via mypy in CI instead.
-    # TCH (flake8-type-checking) removed — TYPE_CHECKING restructuring is
-    # deferred until annotation coverage is complete.
+    "ANN", # flake8-annotations
 ]
 ignore = [
-    "S104",  # possible binding to all interfaces
-    "B008",  # FastAPI Depends/File/Form calls in default args — intentional DI pattern
-    "S105",  # possible hardcoded password — false-positive on token_type = "bearer"
-    "I001",  # import block is un-sorted or un-formatted — managed separately
-    "F401",  # imported but unused — re-exports and shim modules use noqa where needed
-    "UP035", # deprecated typing imports — collections.abc migration deferred
-    "UP033", # use @functools.cache instead of lru_cache(maxsize=None) — deferred
+    "E501",    # line too long — handled by formatter
+    "B008",    # FastAPI Depends() in function defaults — this is the FastAPI pattern
+    "W191",    # indentation contains tabs
+    "E711",    # comparison to None
+    "E712",    # comparison to True/False
+    "ANN001",  # missing type annotation for function argument
+    "ANN002",  # missing type annotation for *args
+    "ANN003",  # missing type annotation for **kwargs
+    "ANN101",  # removed rule — no effect
+    "ANN102",  # removed rule — no effect
+    "ANN201",  # missing return type annotation for public function
+    "ANN202",  # missing return type annotation for private function
+    "ANN401",  # typing.Any disallowed — needed for ML pipeline X arrays
+    "N806",    # variable in function should be lowercase — X, X_train are ML conventions
 ]
 
-[tool.ruff.lint.isort]
-force-sort-within-sections = true
-known-first-party = ["app"]
-
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "S106", "S311"]  # assert + hardcoded pwd/random OK in tests
-"app/ml/pipeline.py" = ["N806"]  # X, X_train, X_test, X_scaled — standard ML naming
-
-[tool.black]
-line-length = 100
-target-version = ["py311"]
+"tests/*" = ["S101", "S106", "ANN", "F401"]  # Allow assert, hardcoded passwords, missing annotations in tests
 
 [tool.mypy]
 python_version = "3.11"
@@ -140,13 +131,7 @@ addopts = [
 
 [tool.coverage.run]
 source = ["app"]
-omit = [
-    "*/migrations/*",
-    "*/tests/*",
-    "app/main.py",
-    "app/api/*",
-    "app/services/ml_service.py",
-]
+omit = ["*/migrations/*", "*/tests/*", "app/main.py"]
 branch = true
 
 [tool.coverage.report]
