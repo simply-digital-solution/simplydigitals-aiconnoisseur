@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-
 from app.ml.pipeline import MLPipeline
 from app.models.models import AlgorithmType
 

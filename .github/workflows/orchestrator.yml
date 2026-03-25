@@ -2,11 +2,19 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, "feature/**", "feat/**", "fix/**", "refactor/**", "hotfix/**", "deploy/**"]
+    branches:
+      - main
+      - "feature/**"
+      - "feat/**"
+      - "fix/**"
+      - "refactor/**"
+      - "hotfix/**"
+      - "deploy/**"
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
 
 permissions:
   pull-requests: write
@@ -19,6 +27,7 @@ concurrency:
 
 jobs:
 
+  # ── Detect which components changed ────────────────────────────────────────
   detect:
     name: Detect changes
     runs-on: ubuntu-latest
@@ -30,6 +39,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+
       - id: filter
         uses: dorny/paths-filter@v3
         with:
@@ -42,14 +52,19 @@ jobs:
               - 'simplydigitals-aiconnoisseur-ui/**'
               - '!simplydigitals-aiconnoisseur-ui/**.md'
 
+  # ── API Pipeline ────────────────────────────────────────────────────────────
   api:
     name: API Pipeline
     needs: detect
     if: needs.detect.outputs.api == 'true' || startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/api-ci.yml
     with:
-      deploy: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      run_tests: ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v') }}
+      # Push to feature branch → lint only
+      # Pull request → tests only
+      # Merge to main or tag → deploy only
+      run_lint:   ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v') }}
+      run_tests:  ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v') }}
+      run_deploy: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/v') }}
     secrets:
       AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -63,14 +78,16 @@ jobs:
       S3_ARTEFACT_BUCKET:    ${{ secrets.S3_ARTEFACT_BUCKET }}
       ENVIRONMENT:           ${{ secrets.ENVIRONMENT }}
 
+  # ── UI Pipeline ─────────────────────────────────────────────────────────────
   ui:
     name: UI Pipeline
     needs: detect
     if: needs.detect.outputs.ui == 'true' || startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/ui-ci.yml
     with:
-      deploy: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      run_tests: ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v') }}
+      run_lint:   ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v') }}
+      run_tests:  ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v') }}
+      run_deploy: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/v') }}
     secrets:
       AWS_ACCESS_KEY_ID:          ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY:      ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -79,8 +96,9 @@ jobs:
       S3_UI_BUCKET:               ${{ secrets.S3_UI_BUCKET }}
       CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 
+  # ── PR Summary comment ──────────────────────────────────────────────────────
   summary:
-    name: Pipeline Summary
+    name: PR Summary
     runs-on: ubuntu-latest
     needs: [detect, api, ui]
     if: always() && github.event_name == 'pull_request'
@@ -97,11 +115,11 @@ jobs:
             const runUrl     = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
             const icon = (r) => r === 'success' ? '✅' : r === 'failure' ? '❌' : r === 'skipped' ? '⏭️' : '⏳'
             const rows = []
-            if (apiChanged) rows.push(`| API Pipeline | ${icon(apiResult)} ${apiResult} |`)
-            if (uiChanged)  rows.push(`| UI Pipeline  | ${icon(uiResult)}  ${uiResult}  |`)
-            if (!apiChanged && !uiChanged) rows.push(`| No source changes detected | ⏭️ skipped |`)
+            if (apiChanged) rows.push(`| API — Tests + Coverage | ${icon(apiResult)} ${apiResult} |`)
+            if (uiChanged)  rows.push(`| UI  — Tests + Coverage | ${icon(uiResult)}  ${uiResult}  |`)
+            if (!apiChanged && !uiChanged) rows.push(`| No source changes | ⏭️ skipped |`)
             const body = [
-              `## CI/CD Summary — \`${sha}\``,
+              `## PR Quality Gate — \`${sha}\``,
               `| Pipeline | Result |`,
               `|----------|--------|`,
               ...rows,
@@ -112,7 +130,7 @@ jobs:
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number,
             })
-            const existing = comments.find(c => c.body.includes('CI/CD Summary'))
+            const existing = comments.find(c => c.body.includes('PR Quality Gate'))
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner, repo: context.repo.repo,

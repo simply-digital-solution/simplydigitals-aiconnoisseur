@@ -5,15 +5,15 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from fastapi import HTTPException, status
 import pandas as pd
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.ml.pipeline import MLPipeline
-from app.models.models import AlgorithmType, Dataset, MLModel, ModelStatus
+from app.models.models import Dataset, MLModel, ModelStatus
 from app.schemas.schemas import TrainRequest
 
 logger = get_logger(__name__)

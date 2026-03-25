@@ -3,18 +3,18 @@ name: API CI
 on:
   workflow_call:
     inputs:
-      environment:
-        required: false
-        type: string
-        default: testing
-      deploy:
+      run_lint:
         required: false
         type: boolean
         default: false
       run_tests:
         required: false
         type: boolean
-        default: true
+        default: false
+      run_deploy:
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ACCESS_KEY_ID:     { required: false }
       AWS_SECRET_ACCESS_KEY: { required: false }
@@ -35,7 +35,6 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.11"
-  WORKING_DIR: simplydigitals-aiconnoisseur-api
   SECRET_KEY: "ci-secret-key-at-least-32-chars-long!!"
   ENVIRONMENT: testing
   DATABASE_URL: "sqlite+aiosqlite:///:memory:"
@@ -46,39 +45,46 @@ defaults:
 
 jobs:
 
+  # ── 1. LINT — runs on feature branch push ──────────────────────────────────
   lint:
-    name: Lint & Type-Check
+    name: Lint
     runs-on: ubuntu-latest
+    if: inputs.run_lint
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: simplydigitals-aiconnoisseur-api/pyproject.toml
+
       - name: Install dev dependencies
         run: pip install -e ".[dev]"
-      - name: Ruff
-        run: ruff check app tests --output-format=github
-        continue-on-error: true
 
+      - name: Ruff
+        run: ruff check app tests
+
+  # ── 2. UNIT TESTS + COVERAGE — runs on pull request ────────────────────────
   unit-tests:
     name: Unit Tests & Coverage
     runs-on: ubuntu-latest
+    if: inputs.run_tests
     timeout-minutes: 15
-    needs: [lint]
-    if: inputs.run_tests != false
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: simplydigitals-aiconnoisseur-api/pyproject.toml
+
       - name: Install dependencies
         run: pip install -e ".[dev,test]"
-      - name: Run pytest
+
+      - name: Run pytest with coverage
         run: |
           pytest tests/unit/ \
             --cov=app \
@@ -87,6 +93,7 @@ jobs:
             --cov-fail-under=70 \
             --junitxml=pytest-report.xml \
             -v
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -94,19 +101,20 @@ jobs:
           path: simplydigitals-aiconnoisseur-api/pytest-report.xml
           retention-days: 7
 
+  # ── 3. VERSION — runs on merge to main ─────────────────────────────────────
   version:
     name: Resolve Version
     runs-on: ubuntu-latest
+    if: inputs.run_deploy
     outputs:
       version:    ${{ steps.resolve.outputs.version }}
-      major:      ${{ steps.resolve.outputs.major }}
-      minor:      ${{ steps.resolve.outputs.minor }}
       is_release: ${{ steps.resolve.outputs.is_release }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
+
       - name: Resolve version
         id: resolve
         run: |
@@ -115,74 +123,32 @@ jobs:
           GIT_TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           if [ -n "$GIT_TAG" ]; then
             VERSION="${GIT_TAG#v}"
-            MAJOR=$(echo $VERSION | cut -d. -f1)
-            MINOR=$(echo $VERSION | cut -d. -f1-2)
             IS_RELEASE="true"
           else
             LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
             if [ -n "$LAST_TAG" ]; then
               DISTANCE=$(git rev-list ${LAST_TAG}..HEAD --count)
               BASE="${LAST_TAG#v}"
-              # Docker tags cannot contain + — use - instead
               VERSION="${BASE}-dev.${DISTANCE}-${SHORT_SHA}"
             else
               VERSION="0.0.0-dev-${SHORT_SHA}"
             fi
-            MAJOR="0"
-            MINOR="0"
             IS_RELEASE="false"
           fi
           echo "version=$VERSION"       >> $GITHUB_OUTPUT
-          echo "major=$MAJOR"           >> $GITHUB_OUTPUT
-          echo "minor=$MINOR"           >> $GITHUB_OUTPUT
           echo "is_release=$IS_RELEASE" >> $GITHUB_OUTPUT
           echo "Version: $VERSION (release=$IS_RELEASE)"
 
-  build:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    needs: [lint, unit-tests, version]
-    if: |
-      always() && !failure() && !cancelled() &&
-      (github.event_name == 'pull_request' ||
-       github.ref == 'refs/heads/main' ||
-       startsWith(github.ref, 'refs/tags/v'))
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Build image
-        uses: docker/build-push-action@v5
-        with:
-          context: simplydigitals-aiconnoisseur-api
-          push: false
-          load: true
-          tags: "simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}"
-          build-args: |
-            APP_VERSION=${{ needs.version.outputs.version }}
-          cache-from: type=gha,scope=api
-          cache-to: type=gha,scope=api,mode=max
-      - name: Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "simplydigitals-aiconnoisseur-api:${{ needs.version.outputs.version }}"
-          format: table
-          exit-code: "0"
-          ignore-unfixed: true
-          severity: CRITICAL,HIGH
-
+  # ── 4. BUILD + DEPLOY — runs on merge to main ──────────────────────────────
   deploy:
-    name: Deploy API to Lambda
+    name: Build & Deploy to Lambda
     runs-on: ubuntu-latest
-    needs: [build, version]
-    if: inputs.deploy && github.ref == 'refs/heads/main'
+    needs: [version]
+    if: inputs.run_deploy
     environment:
       name: production
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -195,7 +161,7 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push image to ECR
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: simplydigitals-aiconnoisseur-api
@@ -203,18 +169,22 @@ jobs:
           tags: |
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ needs.version.outputs.version }}
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
           build-args: |
             APP_VERSION=${{ needs.version.outputs.version }}
           cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
 
       - name: Create or update Lambda function
         run: |
           IMAGE_URI=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
           LAMBDA_NAME=${{ secrets.LAMBDA_FUNCTION_NAME }}
           REGION=ap-southeast-2
+
           EXISTS=$(aws lambda get-function \
             --function-name $LAMBDA_NAME \
             --region $REGION 2>&1 || echo "NOT_FOUND")
+
           if echo "$EXISTS" | grep -q "NOT_FOUND"; then
             echo "Creating Lambda function..."
             aws lambda create-function \
@@ -229,7 +199,6 @@ jobs:
               --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}"
             aws lambda wait function-active \
               --function-name $LAMBDA_NAME --region $REGION
-            echo "Lambda created"
           else
             echo "Updating Lambda function..."
             aws lambda update-function-code \
@@ -238,18 +207,20 @@ jobs:
               --region $REGION
             aws lambda wait function-updated \
               --function-name $LAMBDA_NAME --region $REGION
-            echo "Lambda updated"
           fi
+          echo "Lambda deployed: v${{ needs.version.outputs.version }}"
 
-      - name: Create API Gateway
+      - name: Create API Gateway if not exists
         run: |
           REGION=ap-southeast-2
           LAMBDA_NAME=${{ secrets.LAMBDA_FUNCTION_NAME }}
           ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}
+
           EXISTING=$(aws apigatewayv2 get-apis \
             --region $REGION \
             --query "Items[?Name=='simplydigitals-aiconnoisseur-api-gateway'].ApiId" \
             --output text)
+
           if [ -z "$EXISTING" ] || [ "$EXISTING" = "None" ]; then
             GW_ID=$(aws apigatewayv2 create-api \
               --name simplydigitals-aiconnoisseur-api-gateway \
@@ -293,19 +264,19 @@ jobs:
 
       - name: Health check
         run: |
-          echo "Target: ${API_URL}/health"
+          echo "Waiting for Lambda to warm up..."
           sleep 20
           for i in $(seq 1 8); do
             STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
               "${API_URL}/health" 2>/dev/null || echo "000")
-            echo "Attempt $i - status $STATUS"
+            echo "Attempt $i — status $STATUS"
             if [ "$STATUS" = "200" ]; then
               echo "API is live at ${API_URL}"
               exit 0
             fi
             sleep 15
           done
-          echo "Health check failed - URL: ${API_URL}/health"
+          echo "Health check failed"
           exit 1
 
       - name: Deployment summary

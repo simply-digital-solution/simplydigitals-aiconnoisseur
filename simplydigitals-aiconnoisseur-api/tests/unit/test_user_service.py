@@ -1,10 +1,11 @@
 """Unit tests for UserService."""
 from __future__ import annotations
+
 import pytest
+from app.schemas.schemas import UserCreate
+from app.services.user_service import UserService
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.user_service import UserService
-from app.schemas.schemas import UserCreate
 
 _PW = "Password1!"
 

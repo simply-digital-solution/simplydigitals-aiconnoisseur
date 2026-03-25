@@ -3,14 +3,18 @@ name: UI CI
 on:
   workflow_call:
     inputs:
-      deploy:
+      run_lint:
         required: false
         type: boolean
         default: false
       run_tests:
         required: false
         type: boolean
-        default: true
+        default: false
+      run_deploy:
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ACCESS_KEY_ID:          { required: false }
       AWS_SECRET_ACCESS_KEY:      { required: false }
@@ -30,43 +34,47 @@ defaults:
 
 jobs:
 
+  # ── 1. LINT — runs on feature branch push ──────────────────────────────────
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: inputs.run_lint
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: simplydigitals-aiconnoisseur-ui/package-lock.json
+
       - run: npm install
+
       - name: ESLint
         run: npx eslint src --ext .js,.jsx --max-warnings 0
         continue-on-error: true
-      - name: Prettier check
-        run: npx prettier --check "src/**/*.{js,jsx,css}"
-        continue-on-error: true
 
+  # ── 2. UNIT TESTS + COVERAGE — runs on pull request ────────────────────────
   unit-tests:
     name: Unit Tests & Coverage
     runs-on: ubuntu-latest
-    needs: [lint]
-    if: |
-      github.event_name == 'pull_request' ||
-      startsWith(github.ref, 'refs/tags/v')
+    if: inputs.run_tests
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: simplydigitals-aiconnoisseur-ui/package-lock.json
+
       - run: npm install
-      - name: Run Vitest
+
+      - name: Run Vitest with coverage
         run: npm run test:coverage
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -74,63 +82,88 @@ jobs:
           path: simplydigitals-aiconnoisseur-ui/coverage/
           retention-days: 7
 
-  build:
-    name: Build
+  # ── 3. VERSION — runs on merge to main ─────────────────────────────────────
+  version:
+    name: Resolve Version
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
-    if: |
-      always() && !failure() && !cancelled() &&
-      (github.event_name == 'pull_request' ||
-       github.ref == 'refs/heads/main' ||
-       startsWith(github.ref, 'refs/tags/v'))
-    timeout-minutes: 10
+    if: inputs.run_deploy
+    outputs:
+      version:    ${{ steps.resolve.outputs.version }}
+      is_release: ${{ steps.resolve.outputs.is_release }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve version
+        id: resolve
+        run: |
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          GIT_TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          if [ -n "$GIT_TAG" ]; then
+            VERSION="${GIT_TAG#v}"
+            IS_RELEASE="true"
+          else
+            LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ -n "$LAST_TAG" ]; then
+              DISTANCE=$(git rev-list ${LAST_TAG}..HEAD --count)
+              BASE="${LAST_TAG#v}"
+              VERSION="${BASE}-dev.${DISTANCE}-${SHORT_SHA}"
+            else
+              VERSION="0.0.0-dev-${SHORT_SHA}"
+            fi
+            IS_RELEASE="false"
+          fi
+          echo "version=$VERSION"       >> $GITHUB_OUTPUT
+          echo "is_release=$IS_RELEASE" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION (release=$IS_RELEASE)"
+
+  # ── 4. BUILD + DEPLOY — runs on merge to main ──────────────────────────────
+  deploy:
+    name: Build & Deploy to S3
+    runs-on: ubuntu-latest
+    needs: [version]
+    if: inputs.run_deploy
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: simplydigitals-aiconnoisseur-ui/package-lock.json
+
       - run: npm install
+
       - name: Vite build
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ vars.API_URL }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ui-dist-${{ github.run_id }}
-          path: simplydigitals-aiconnoisseur-ui/dist/
-          retention-days: 7
+          VITE_APP_VERSION: ${{ needs.version.outputs.version }}
 
-  deploy:
-    name: Deploy UI to S3
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: inputs.deploy && github.ref == 'refs/heads/main'
-    environment:
-      name: production
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ui-dist-${{ github.run_id }}
-          path: dist/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
+
       - name: Sync assets to S3
         run: |
           aws s3 sync dist/ s3://${{ secrets.S3_UI_BUCKET }}/ \
             --delete \
             --cache-control "public,max-age=31536000,immutable" \
             --exclude "index.html"
+
       - name: Upload index.html
         run: |
           aws s3 cp dist/index.html s3://${{ secrets.S3_UI_BUCKET }}/index.html \
             --cache-control "no-cache,no-store,must-revalidate" \
             --content-type "text/html"
+
       - name: Invalidate CloudFront
         run: |
           DIST_ID="${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
@@ -138,6 +171,16 @@ jobs:
             aws cloudfront create-invalidation \
               --distribution-id "$DIST_ID" \
               --paths "/*"
+            echo "CloudFront invalidated"
           else
-            echo "No CloudFront distribution ID set — skipping invalidation"
+            echo "No CloudFront distribution ID — skipping"
           fi
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "=================================="
+          echo " Version : ${{ needs.version.outputs.version }}"
+          echo " Bucket  : ${{ secrets.S3_UI_BUCKET }}"
+          echo " Region  : ap-southeast-2"
+          echo "=================================="

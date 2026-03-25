@@ -5,7 +5,6 @@ from __future__ import annotations
 from behave import given, then, when  # type: ignore[import-untyped]
 from behave.runner import Context  # type: ignore[import-untyped]
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Given
 # ─────────────────────────────────────────────────────────────────────────────
