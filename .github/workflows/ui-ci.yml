@@ -7,6 +7,10 @@ on:
         required: false
         type: boolean
         default: false
+      run_tests:
+        required: false
+        type: boolean
+        default: true
     secrets:
       AWS_ACCESS_KEY_ID:          { required: false }
       AWS_SECRET_ACCESS_KEY:      { required: false }
