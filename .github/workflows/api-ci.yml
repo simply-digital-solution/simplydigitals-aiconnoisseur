@@ -197,23 +197,6 @@ jobs:
             APP_VERSION=${{ needs.version.outputs.version }}
           cache-from: type=gha,scope=api
 
-      - name: Tag as latest for releases
-        if: needs.version.outputs.is_release == 'true'
-        run: |
-          MANIFEST=$(aws ecr batch-get-image \
-            --repository-name ${{ secrets.ECR_REPOSITORY }} \
-            --image-ids imageTag=${{ github.sha }} \
-            --region ap-southeast-2 \
-            --query 'images[0].imageManifest' \
-            --output text)
-          for TAG in ${{ needs.version.outputs.major }} ${{ needs.version.outputs.minor }} latest; do
-            aws ecr put-image \
-              --repository-name ${{ secrets.ECR_REPOSITORY }} \
-              --image-tag $TAG \
-              --image-manifest "$MANIFEST" \
-              --region ap-southeast-2 2>/dev/null || true
-          done
-
       - name: Create or update Lambda function
         run: |
           IMAGE_URI=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
