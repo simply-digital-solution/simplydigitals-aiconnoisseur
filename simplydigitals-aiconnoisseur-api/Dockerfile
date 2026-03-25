@@ -1,47 +1,47 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Build on the SAME Amazon Linux 2 base as Lambda runtime
-# This ensures GLIBC compatibility for compiled packages (scipy, numpy etc.)
+# This ensures GLIBC compatibility for all compiled packages
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.11 AS builder
 
 WORKDIR /build
 
-# Install build tools needed for asyncpg and psycopg2
+# Install build tools for packages that compile C extensions
 RUN yum update -y && \
     yum install -y gcc gcc-c++ libpq-devel python3-devel && \
     yum clean all
 
-# Upgrade pip
 RUN pip install --upgrade pip
 
 # Copy dependency manifest
 COPY pyproject.toml README.md ./
 COPY app/ ./app/
 
-# Step 1 — install everything with --prefer-binary for manylinux wheels
-# This covers numpy, scipy, pandas, scikit-learn etc.
+# Install all packages with --prefer-binary to get manylinux wheels
+# where available (numpy, scipy, pandas, scikit-learn etc.)
 RUN pip install \
     --prefer-binary \
     --no-cache-dir \
     --target /packages \
     .
 
-# Step 2 — force-reinstall asyncpg from source to ensure correct build
-# asyncpg has no manylinux wheel so --prefer-binary skips it
+# Explicitly reinstall packages that have no manylinux wheel
+# and must be compiled from source on Amazon Linux 2
 RUN pip install \
     --no-cache-dir \
-    --no-binary asyncpg \
+    --no-binary asyncpg,psycopg2 \
     --target /packages \
-    "asyncpg>=0.29.0"
+    "asyncpg>=0.29.0" \
+    "psycopg2-binary>=2.9.9"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Runtime — same Lambda base image
+# Runtime — same Lambda base image (Amazon Linux 2, GLIBC 2.26)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.11
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Copy pre-built packages
+# Copy all pre-built packages
 COPY --from=builder /packages ${LAMBDA_TASK_ROOT}
 
 # Copy application source
