@@ -1,4 +1,4 @@
-name: API CI — ${{ inputs.run_tests && 'Lint + Test + Build' || 'Lint + Build' }}${{ inputs.deploy && ' + Deploy' || '' }}
+name: API CI
 
 on:
   workflow_call:

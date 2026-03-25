@@ -1,4 +1,4 @@
-name: UI CI — ${{ inputs.run_tests && 'Lint + Build' || 'Lint only' }}${{ inputs.deploy && ' + Deploy' || '' }}
+name: UI CI
 
 on:
   workflow_call:
