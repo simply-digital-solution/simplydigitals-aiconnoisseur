@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.auth.dependencies import get_current_user
-from app.modules.auth.models import User
 from app.modules.datasets.schemas import DatasetProfile, DatasetRead
 from app.modules.datasets.service import DatasetService
 from app.shared.database import get_db
 from app.shared.i18n.translator import get_translator
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.modules.auth.models import User
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
 

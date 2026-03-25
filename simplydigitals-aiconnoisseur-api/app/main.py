@@ -14,8 +14,8 @@ Adding a new module:
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -26,15 +26,17 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app.shared.config import get_settings
-from app.shared.database import engine
-from app.shared.logging import configure_logging, get_logger
-
 # ── Module routers ────────────────────────────────────────────────────────────
 from app.modules.analytics.router import router as analytics_router
 from app.modules.auth.router import router as auth_router
 from app.modules.datasets.router import router as datasets_router
 from app.modules.models.router import router as models_router
+from app.shared.config import get_settings
+from app.shared.database import engine
+from app.shared.logging import configure_logging, get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 settings = get_settings()
 logger = get_logger(__name__)

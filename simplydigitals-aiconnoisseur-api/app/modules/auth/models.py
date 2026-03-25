@@ -6,12 +6,15 @@ Owns: User, AuthProvider
 from __future__ import annotations
 
 import enum
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared.base import Base, new_uuid, utcnow
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class AuthProvider(enum.StrEnum):

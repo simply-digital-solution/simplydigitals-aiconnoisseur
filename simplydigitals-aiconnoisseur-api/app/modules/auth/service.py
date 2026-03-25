@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.auth.models import AuthProvider, User
-from app.modules.auth.schemas import UserCreate
 from app.shared.security import hash_password, verify_password
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.modules.auth.schemas import UserCreate
 
 
 class OAuthProfile:

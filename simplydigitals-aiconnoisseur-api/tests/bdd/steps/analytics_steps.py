@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import csv
 import tempfile
+from typing import TYPE_CHECKING
 
-from behave import given, then, when  # type: ignore[import-untyped]
-from behave.runner import Context  # type: ignore[import-untyped]
 import numpy as np
+from behave import given, then, when  # type: ignore[import-untyped]
+
+if TYPE_CHECKING:
+    from behave.runner import Context
 
 
 @given("I have uploaded a numeric dataset")

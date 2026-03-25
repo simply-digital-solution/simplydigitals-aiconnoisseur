@@ -4,17 +4,20 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 import pandas as pd
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.models import Dataset, User
 from app.schemas.schemas import DatasetProfile, DatasetRead, MessageResponse
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
 settings = get_settings()

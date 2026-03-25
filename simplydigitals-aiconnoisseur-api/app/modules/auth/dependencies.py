@@ -7,15 +7,20 @@ in the auth module so the contract is clear.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.auth.models import User
 from app.modules.auth.service import UserService
 from app.shared.database import get_db
 from app.shared.security import decode_token
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.modules.auth.models import User
 
 bearer_scheme = HTTPBearer(auto_error=True)
 

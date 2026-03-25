@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
-from app.models.models import User
 from app.schemas.schemas import (
     MessageResponse,
     MLModelRead,
@@ -16,6 +16,11 @@ from app.schemas.schemas import (
     TrainRequest,
 )
 from app.services.ml_service import MLModelService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models.models import User
 
 router = APIRouter(prefix="/models", tags=["ML Models"])
 

@@ -7,12 +7,15 @@ only requires changing DATABASE_URL.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.shared.base import Base
 from app.shared.config import get_settings
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 settings = get_settings()
 

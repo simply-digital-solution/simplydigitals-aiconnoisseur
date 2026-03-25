@@ -7,15 +7,13 @@ from __future__ import annotations
 
 import os
 
-import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
+from app.core.security import create_access_token, hash_password
 from app.db.session import Base, get_db
 from app.main import create_app
 from app.models.models import User
-from app.core.security import hash_password, create_access_token
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # ── Override settings before importing anything that calls get_settings() ──
 os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-chars!!")

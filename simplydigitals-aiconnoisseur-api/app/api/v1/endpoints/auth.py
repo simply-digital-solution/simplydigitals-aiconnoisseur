@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, create_refresh_token, decode_token
 from app.db.session import get_db
 from app.schemas.schemas import LoginRequest, RefreshRequest, TokenResponse, UserCreate, UserRead
 from app.services.user_service import UserService
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

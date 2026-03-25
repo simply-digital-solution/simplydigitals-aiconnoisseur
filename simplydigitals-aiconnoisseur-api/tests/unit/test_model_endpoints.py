@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import csv
 import io
+from typing import TYPE_CHECKING
 
-import pytest
-from httpx import AsyncClient
+if TYPE_CHECKING:
+    from httpx import AsyncClient
 
 
 def _clf_csv(rows: int = 150) -> bytes:

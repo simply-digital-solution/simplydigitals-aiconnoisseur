@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
-from httpx import AsyncClient
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from httpx import AsyncClient
 
 # All passwords must be < 72 bytes (bcrypt hard limit)
 _PASSWORD = "StrongPass1!"

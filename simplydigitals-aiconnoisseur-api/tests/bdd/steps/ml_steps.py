@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import csv
-import os
 import tempfile
+from typing import TYPE_CHECKING
 
-from behave import given, then, when  # type: ignore[import-untyped]
-from behave.runner import Context  # type: ignore[import-untyped]
 import numpy as np
+from behave import given, then, when  # type: ignore[import-untyped]
+
+if TYPE_CHECKING:
+    from behave.runner import Context
 
 
 def _write_classification_csv(path: str, n: int = 150) -> None:

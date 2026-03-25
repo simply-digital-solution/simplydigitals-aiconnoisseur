@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import HTTPException, status
 import numpy as np
 import pandas as pd
+from fastapi import HTTPException, status
 from sklearn.linear_model import LinearRegression
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.datasets.models import Dataset
 from app.shared.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 _noop = lambda k, **kw: k  # noqa: E731

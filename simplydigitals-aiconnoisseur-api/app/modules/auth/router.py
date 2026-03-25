@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.auth.models import AuthProvider
 from app.modules.auth.oauth import verify_facebook_token, verify_google_token
@@ -22,6 +23,9 @@ from app.shared.database import get_db
 from app.shared.i18n.translator import get_translator
 from app.shared.logging import get_logger
 from app.shared.security import create_access_token, create_refresh_token, decode_token
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])

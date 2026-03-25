@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
 import pandas as pd
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
@@ -18,6 +17,9 @@ from app.schemas.schemas import (
     ForecastRequest,
     ForecastResponse,
 )
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -70,8 +72,8 @@ async def forecast(
     df = df.sort_values(payload.date_column)
     df["_t"] = range(len(df))
 
-    from sklearn.linear_model import LinearRegression  # noqa: PLC0415
     import numpy as np  # noqa: PLC0415
+    from sklearn.linear_model import LinearRegression  # noqa: PLC0415
 
     model = LinearRegression()
     model.fit(df[["_t"]], df[payload.value_column])

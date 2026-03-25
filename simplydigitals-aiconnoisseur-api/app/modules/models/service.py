@@ -2,21 +2,25 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import HTTPException, status
 import pandas as pd
+from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ml.pipeline import MLPipeline
 from app.modules.datasets.models import Dataset
-from app.modules.models.models import AlgorithmType, MLModel, ModelStatus
-from app.modules.models.schemas import TrainRequest
+from app.modules.models.models import MLModel, ModelStatus
 from app.shared.config import get_settings
 from app.shared.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.modules.models.schemas import TrainRequest
 
 logger = get_logger(__name__)
 settings = get_settings()

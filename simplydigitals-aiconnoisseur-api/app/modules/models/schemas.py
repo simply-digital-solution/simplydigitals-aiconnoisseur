@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict
 
-from app.modules.models.models import AlgorithmType, ModelStatus
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from app.modules.models.models import AlgorithmType, ModelStatus
 
 
 class _Base(BaseModel):

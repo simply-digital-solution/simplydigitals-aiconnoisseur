@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.auth.dependencies import get_current_user
-from app.modules.auth.models import User
 from app.modules.models.schemas import ModelRead, PredictRequest, TrainRequest
 from app.modules.models.service import MLModelService
 from app.shared.database import get_db
 from app.shared.i18n.translator import get_translator
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.modules.auth.models import User
 
 router = APIRouter(prefix="/models", tags=["Models"])
 

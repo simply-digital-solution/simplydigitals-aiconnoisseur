@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 import pytest
-
 from app.ml.pipeline import MLPipeline
 from app.models.models import AlgorithmType
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _make_classification_df(n: int = 200) -> pd.DataFrame:

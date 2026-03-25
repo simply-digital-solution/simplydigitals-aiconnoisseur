@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import httpx
 from fastapi import HTTPException, status
@@ -12,6 +12,9 @@ from fastapi import HTTPException, status
 from app.modules.auth.service import OAuthProfile
 from app.shared.config import get_settings
 from app.shared.logging import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = get_logger(__name__)
 

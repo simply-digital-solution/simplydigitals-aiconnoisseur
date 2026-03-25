@@ -5,8 +5,10 @@ from __future__ import annotations
 import csv
 import datetime
 import io
+from typing import TYPE_CHECKING
 
-from httpx import AsyncClient
+if TYPE_CHECKING:
+    from httpx import AsyncClient
 
 
 def _numeric_csv(rows: int = 80) -> bytes:

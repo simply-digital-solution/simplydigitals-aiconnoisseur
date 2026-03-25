@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-import pytest
-from fastapi import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import TYPE_CHECKING
 
+import pytest
 from app.schemas.schemas import UserCreate
 from app.services.user_service import UserService
+from fastapi import HTTPException
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestUserService:

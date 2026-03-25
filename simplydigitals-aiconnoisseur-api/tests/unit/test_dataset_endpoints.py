@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import csv
 import io
-import tempfile
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pytest
-from httpx import AsyncClient
+if TYPE_CHECKING:
+    from httpx import AsyncClient
 
 
 def _csv_bytes(rows: int = 50) -> bytes:
