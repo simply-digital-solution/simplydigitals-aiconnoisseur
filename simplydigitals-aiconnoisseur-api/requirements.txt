@@ -59,3 +59,4 @@ six>=1.16.0                # Required by python-dateutil
 click>=8.1.0               # Required by uvicorn CLI
 h11>=0.14.0                # Required by uvicorn
 Mako>=1.3.0                # Required by alembic templates
+asyncpg>=0.29.0              # async PostgreSQL driver for SQLAlchemy
