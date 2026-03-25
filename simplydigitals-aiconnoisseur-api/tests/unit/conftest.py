@@ -1,32 +1,22 @@
-"""Shared pytest fixtures for unit tests.
-
-Uses an in-memory SQLite database for fast, isolated tests.
-"""
-
+"""Shared pytest fixtures for unit tests."""
 from __future__ import annotations
-
 import os
-
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
 from app.db.session import Base, get_db
 from app.main import create_app
 from app.models.models import User
 from app.core.security import hash_password, create_access_token
 
-# ── Override settings before importing anything that calls get_settings() ──
-os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-chars!!")
-os.environ.setdefault("ENVIRONMENT", "testing")
-os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+os.environ["SECRET_KEY"] = "test-secret-key-at-least-32-chars!!"
+os.environ["ENVIRONMENT"] = "testing"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 
-# ── Short passwords safe for bcrypt (must be < 72 bytes) ──────────────────
-TEST_PASSWORD = "TestPass123!"   # 12 chars — well within bcrypt 72-byte limit
+TEST_PASSWORD = "TestPass123!"
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
-
 _engine = create_async_engine(TEST_DB_URL, echo=False)
 _SessionLocal = async_sessionmaker(_engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -54,7 +44,6 @@ async def client(db_session: AsyncSession) -> AsyncClient:  # type: ignore[retur
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
-
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
