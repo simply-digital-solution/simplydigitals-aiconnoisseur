@@ -171,6 +171,8 @@ jobs:
         with:
           context: simplydigitals-aiconnoisseur-api
           push: true
+          platforms: linux/amd64
+          provenance: false
           tags: |
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ needs.version.outputs.version }}
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
