@@ -1,32 +1,34 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Dockerfile — AI Connoisseur API
-#
-# Uses the official AWS Lambda Python 3.11 base image which provides:
-#   - GCC 11+ (satisfies NumPy build requirements)
-#   - The exact runtime environment Lambda uses in production
+# Build stage — use standard Python image which has pre-built wheels for numpy
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml README.md ./
+COPY app/ ./app/
+
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --target=/packages .
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Runtime stage — Lambda base image
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.11
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Install build dependencies
-RUN yum update -y && \
-    yum install -y gcc gcc-c++ libpq-devel && \
-    yum clean all
-
-# Copy dependency manifests first for better layer caching
-COPY pyproject.toml README.md ./
+# Copy pre-built packages from builder
+COPY --from=builder /packages ${LAMBDA_TASK_ROOT}
 
 # Copy application source
 COPY app/ ./app/
 
-# Install all dependencies directly into the Lambda task root
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir .
-
-# Accept version build arg for labelling
 ARG APP_VERSION=dev
 LABEL org.opencontainers.image.version=${APP_VERSION}
 
-# Lambda handler — Mangum wraps FastAPI for Lambda
 CMD ["app.main.handler"]
