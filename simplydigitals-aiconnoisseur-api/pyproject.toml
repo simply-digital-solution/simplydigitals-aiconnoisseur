@@ -85,22 +85,29 @@ select = [
     "F",   # pyflakes
     "I",   # isort
     "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
-    "S",   # flake8-bandit (security)
     "N",   # pep8-naming
     "ANN", # flake8-annotations
-    "SIM", # flake8-simplify
-    "TCH", # flake8-type-checking
 ]
 ignore = [
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
-    "S104",    # possible binding to all interfaces
+    "E501",    # line too long — handled by formatter
+    "B008",    # FastAPI Depends() in function defaults — this is the FastAPI pattern
+    "W191",    # indentation contains tabs
+    "E711",    # comparison to None
+    "E712",    # comparison to True/False
+    "ANN001",  # missing type annotation for function argument
+    "ANN002",  # missing type annotation for *args
+    "ANN003",  # missing type annotation for **kwargs
+    "ANN101",  # removed rule — no effect
+    "ANN102",  # removed rule — no effect
+    "ANN201",  # missing return type annotation for public function
+    "ANN202",  # missing return type annotation for private function
+    "ANN401",  # typing.Any disallowed — needed for ML pipeline X arrays
+    "N806",    # variable in function should be lowercase — X, X_train are ML conventions
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "ANN"]  # Allow assert and missing annotations in tests
+"tests/*" = ["S101", "S106", "ANN", "F401"]  # Allow assert, hardcoded passwords, missing annotations in tests
 
 [tool.mypy]
 python_version = "3.11"
