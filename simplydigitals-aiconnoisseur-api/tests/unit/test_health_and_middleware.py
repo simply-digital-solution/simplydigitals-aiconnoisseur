@@ -1,5 +1,6 @@
 """Unit tests for health endpoint and security middleware."""
 from __future__ import annotations
+
 from httpx import AsyncClient
 
 

@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from fastapi import HTTPException, status
 import numpy as np
 import pandas as pd
+from fastapi import HTTPException, status
 from sklearn.linear_model import LinearRegression
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

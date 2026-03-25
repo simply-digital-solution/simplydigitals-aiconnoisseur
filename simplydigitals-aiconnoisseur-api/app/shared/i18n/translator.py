@@ -19,10 +19,11 @@ from __future__ import annotations
 
 import json
 import os
-from functools import lru_cache
-from typing import Callable
+from collections.abc import Callable
+from functools import cache
 
 from fastapi import Request
+
 from app.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -32,7 +33,7 @@ SUPPORTED_LOCALES = {"en", "ms", "zh", "ta"}
 DEFAULT_LOCALE = "en"
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_locale(locale: str) -> dict:
     """Load and cache a locale file. Called once per locale per process."""
     path = os.path.join(LOCALES_DIR, f"{locale}.json")

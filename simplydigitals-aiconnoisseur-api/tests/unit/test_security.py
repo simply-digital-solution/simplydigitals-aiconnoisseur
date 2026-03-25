@@ -1,7 +1,7 @@
 """Unit tests for app.core.security."""
 from __future__ import annotations
+
 import pytest
-from jose import JWTError
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -9,6 +9,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from jose import JWTError
 
 _PWD = "correct1!"
 _WRONG = "wrongpass!"

@@ -26,15 +26,14 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app.shared.config import get_settings
-from app.shared.database import engine
-from app.shared.logging import configure_logging, get_logger
-
 # ── Module routers ────────────────────────────────────────────────────────────
 from app.modules.analytics.router import router as analytics_router
 from app.modules.auth.router import router as auth_router
 from app.modules.datasets.router import router as datasets_router
 from app.modules.models.router import router as models_router
+from app.shared.config import get_settings
+from app.shared.database import engine
+from app.shared.logging import configure_logging, get_logger
 
 settings = get_settings()
 logger = get_logger(__name__)

@@ -16,11 +16,14 @@ def before_all(ctx: Context) -> None:
     """Create a shared in-memory database and sync test client."""
     import asyncio  # noqa: PLC0415
 
-    from httpx import ASGITransport, Client  # noqa: PLC0415
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: PLC0415, E501
-
     from app.db.session import Base, get_db  # noqa: PLC0415
     from app.main import create_app  # noqa: PLC0415
+    from httpx import ASGITransport, Client  # noqa: PLC0415
+    from sqlalchemy.ext.asyncio import (  # noqa: PLC0415, E501
+        AsyncSession,
+        async_sessionmaker,
+        create_async_engine,
+    )
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     session_local = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
