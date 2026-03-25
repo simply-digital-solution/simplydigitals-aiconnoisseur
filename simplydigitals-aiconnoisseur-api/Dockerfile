@@ -6,9 +6,9 @@ FROM public.ecr.aws/lambda/python:3.11 AS builder
 
 WORKDIR /build
 
-# Install build tools
+# Install build tools needed for asyncpg and psycopg2
 RUN yum update -y && \
-    yum install -y gcc gcc-c++ libpq-devel && \
+    yum install -y gcc gcc-c++ libpq-devel python3-devel && \
     yum clean all
 
 # Upgrade pip
@@ -18,13 +18,21 @@ RUN pip install --upgrade pip
 COPY pyproject.toml README.md ./
 COPY app/ ./app/
 
-# Install into /packages using manylinux wheels where available
-# --prefer-binary forces pre-built manylinux wheels over source builds
+# Step 1 — install everything with --prefer-binary for manylinux wheels
+# This covers numpy, scipy, pandas, scikit-learn etc.
 RUN pip install \
     --prefer-binary \
     --no-cache-dir \
     --target /packages \
     .
+
+# Step 2 — force-reinstall asyncpg from source to ensure correct build
+# asyncpg has no manylinux wheel so --prefer-binary skips it
+RUN pip install \
+    --no-cache-dir \
+    --no-binary asyncpg \
+    --target /packages \
+    "asyncpg>=0.29.0"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Runtime — same Lambda base image

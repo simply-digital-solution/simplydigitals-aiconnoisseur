@@ -271,19 +271,22 @@ jobs:
 
       - name: Health check
         run: |
+          echo "Health check target: ${API_URL}/health"
           echo "Waiting for Lambda to warm up..."
-          sleep 20
-          for i in $(seq 1 8); do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+          sleep 30
+          for i in $(seq 1 4); do
+            RESPONSE=$(curl -s -o /tmp/health_response.txt -w "%{http_code}" \
               "${API_URL}/health" 2>/dev/null || echo "000")
-            echo "Attempt $i — status $STATUS"
-            if [ "$STATUS" = "200" ]; then
+            BODY=$(cat /tmp/health_response.txt 2>/dev/null || echo "")
+            echo "Attempt $i — status: $RESPONSE — body: $BODY"
+            if [ "$RESPONSE" = "200" ]; then
               echo "API is live at ${API_URL}"
               exit 0
             fi
-            sleep 15
+            sleep 20
           done
-          echo "Health check failed"
+          echo "Health check failed after 4 attempts"
+          echo "Last response body: $BODY"
           exit 1
 
       - name: Deployment summary
