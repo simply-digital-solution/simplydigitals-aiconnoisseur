@@ -47,6 +47,7 @@ dependencies = [
     # Observability
     "structlog>=24.1.0",
     "prometheus-fastapi-instrumentator>=6.1.0",
+    "mangum>=0.17.0",
 ]
 
 [project.optional-dependencies]

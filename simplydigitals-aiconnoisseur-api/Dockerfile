@@ -3,28 +3,30 @@ FROM public.ecr.aws/lambda/python:3.11 AS builder
 
 WORKDIR /build
 
-# Install build dependencies (Amazon Linux uses yum)
-# postgresql-devel provides pg_config and headers for psycopg2
-RUN yum install -y gcc gcc-c++ postgresql-devel
+# Install minimal build tools
+RUN yum install -y gcc gcc-c++
 
-COPY pyproject.toml README.md requirements.txt ./
+# Copy metadata first to leverage Docker cache
+COPY pyproject.toml README.md ./
+# Copy app source (required for 'pip install .')
 COPY app/ app/
 
-# Install dependencies into /install
-# We use --upgrade to ensure we get the latest compatible versions
+# Install the application and all dependencies into a target directory
+# We install '.' which reads dependencies from pyproject.toml
 RUN mkdir /install && \
-    pip install --no-cache-dir --target /install -r requirements.txt && \
     pip install --no-cache-dir --target /install .
 
 # ─── Runtime stage ────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.11 AS runtime
 
+# The AWS Lambda Python image sets LAMBDA_TASK_ROOT to /var/task
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Copy installed packages from builder
+# Copy everything from the builder's install directory
 COPY --from=builder /install ${LAMBDA_TASK_ROOT}
 
-# Copy application source
+# Ensure the app code is also in the root (pip install . puts it in site-packages,
+# but having it in the task root is safer for Mangum/FastAPI discovery)
 COPY app/ ${LAMBDA_TASK_ROOT}/app/
 
 # Set the handler to Mangum
