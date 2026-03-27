@@ -24,6 +24,9 @@ aiconnoisseur-ui/dist/
 .DS_Store
 Thumbs.db
 
+# AWS certificates
+*.pem
+
 # IDE
 .vscode/settings.json
 .idea/
