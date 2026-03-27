@@ -203,7 +203,8 @@ jobs:
               --memory-size 1024 \
               --region $REGION \
               --description "AI Connoisseur API v${{ needs.version.outputs.version }}" \
-              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}"
+              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}" \
+              --vpc-config "SubnetIds=subnet-0f5698acf70fb4e7a,subnet-075b43bf46ddc0259,subnet-01c1232a8ba43ba28,SecurityGroupIds=sg-0154c0e296fe97958"
             aws lambda wait function-active \
               --function-name $LAMBDA_NAME --region $REGION
           else
@@ -214,8 +215,34 @@ jobs:
               --region $REGION
             aws lambda wait function-updated \
               --function-name $LAMBDA_NAME --region $REGION
+            aws lambda update-function-configuration \
+              --function-name $LAMBDA_NAME \
+              --region $REGION \
+              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}" \
+              --vpc-config "SubnetIds=subnet-0f5698acf70fb4e7a,subnet-075b43bf46ddc0259,subnet-01c1232a8ba43ba28,SecurityGroupIds=sg-0154c0e296fe97958"
+            aws lambda wait function-updated \
+              --function-name $LAMBDA_NAME --region $REGION
           fi
           echo "Lambda deployed: v${{ needs.version.outputs.version }}"
+
+      - name: Run database migrations
+        run: |
+          LAMBDA_NAME=${{ secrets.LAMBDA_FUNCTION_NAME }}
+          REGION=ap-southeast-2
+          echo "Running alembic upgrade head via Lambda..."
+          aws lambda invoke \
+            --function-name $LAMBDA_NAME \
+            --region $REGION \
+            --payload '{"action": "migrate"}' \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/migration_response.json
+          cat /tmp/migration_response.json
+          STATUS=$(jq -r '.statusCode' /tmp/migration_response.json)
+          if [ "$STATUS" != "200" ]; then
+            echo "Migration failed with status $STATUS"
+            exit 1
+          fi
+          echo "Migrations applied successfully"
 
       - name: Create API Gateway if not exists
         run: |
