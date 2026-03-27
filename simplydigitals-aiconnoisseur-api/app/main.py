@@ -159,6 +159,24 @@ app = create_app()
 # AWS Lambda handler (Mangum wraps the FastAPI ASGI app)
 try:
     from mangum import Mangum
-    handler = Mangum(app, lifespan="on")
+    _mangum_handler = Mangum(app, lifespan="on")
+
+    def handler(event: dict, context: object) -> dict:
+        """Lambda entrypoint — handles migration invocations and HTTP requests."""
+        if event.get("action") == "migrate":
+            import subprocess
+            import sys
+            result = subprocess.run(
+                [sys.executable, "-m", "alembic", "upgrade", "head"],
+                capture_output=True,
+                text=True,
+            )
+            success = result.returncode == 0
+            logger.info("migration_complete", success=success, stdout=result.stdout, stderr=result.stderr)
+            if not success:
+                return {"statusCode": 500, "body": result.stderr}
+            return {"statusCode": 200, "body": result.stdout}
+        return _mangum_handler(event, context)
+
 except ImportError:
     pass  # mangum not installed in local dev — that is fine
