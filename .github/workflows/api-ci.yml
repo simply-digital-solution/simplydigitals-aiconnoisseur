@@ -174,8 +174,6 @@ jobs:
             ${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
           build-args: |
             APP_VERSION=${{ needs.version.outputs.version }}
-          cache-from: type=registry,ref=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:cache
-          cache-to: type=registry,ref=${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:cache,mode=max,image-manifest=true,oci-mediatypes=true
 
       - name: Create or update Lambda function
         run: |
