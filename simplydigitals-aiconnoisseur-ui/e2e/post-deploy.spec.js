@@ -1,0 +1,134 @@
+/**
+ * Post-deployment E2E tests — run a real Chromium browser against the live
+ * production CloudFront URL to verify the full UI → API path works.
+ *
+ * These tests catch issues that API-only integration tests miss:
+ *   - Wrong API URL baked into the JS bundle (e.g. relative /api/v1 vs full URL)
+ *   - CORS errors the browser enforces but httpx does not
+ *   - CloudFront missing behaviours or caching wrong responses
+ *   - JS runtime errors that prevent the app from rendering
+ *
+ * Required env vars:
+ *   PROD_UI_URL   https://<cloudfront-id>.cloudfront.net
+ *   PROD_API_URL  https://<api-gateway-id>.execute-api.ap-southeast-2.amazonaws.com
+ */
+
+import { test, expect } from '@playwright/test'
+
+const UI_URL = process.env.PROD_UI_URL
+const API_URL = process.env.PROD_API_URL
+
+// Unique email per test run so re-runs don't hit duplicate-user errors
+const TEST_EMAIL = `e2e-probe-${Date.now()}@example.com`
+const TEST_PASSWORD = 'E2eTest1234!'
+const TEST_NAME = 'E2E Probe'
+
+test.describe('UI loads correctly', () => {
+  test('CloudFront serves the React app', async ({ page }) => {
+    const errors = []
+    page.on('pageerror', (err) => errors.push(err.message))
+
+    await page.goto(UI_URL, { waitUntil: 'domcontentloaded' })
+
+    await expect(page.locator('#root')).toBeAttached()
+    expect(errors).toHaveLength(0)
+  })
+
+  test('login page is shown to unauthenticated users', async ({ page }) => {
+    await page.goto(UI_URL)
+    // App should redirect to /login or show the login form
+    await expect(page.getByPlaceholder(/you@example\.com/i)).toBeVisible({ timeout: 10000 })
+  })
+
+  test('API calls go to the correct origin, not CloudFront/S3', async ({ page }) => {
+    const apiRequests = []
+    page.on('request', (req) => {
+      if (req.url().includes('/api/v1')) apiRequests.push(req.url())
+    })
+
+    await page.goto(UI_URL, { waitUntil: 'domcontentloaded' })
+
+    // Trigger a login attempt so the app makes an API call
+    await page.getByPlaceholder(/you@example\.com/i).fill('probe@example.com')
+    await page.getByPlaceholder(/password/i).fill('WrongPass1!')
+    await page.getByRole('button', { name: /sign in|login/i }).click()
+    await page.waitForTimeout(2000)
+
+    // Every API call must go to the API Gateway, not to CloudFront
+    expect(apiRequests.length).toBeGreaterThan(0)
+    for (const url of apiRequests) {
+      expect(url).toContain(API_URL.replace(/\/$/, '')),
+        `API call went to wrong host: ${url} — expected it to start with ${API_URL}`
+    }
+  })
+})
+
+test.describe('Registration flow (UI → API Gateway)', () => {
+  test('user can register through the UI without 403 or 500', async ({ page }) => {
+    const failedRequests = []
+    page.on('response', (res) => {
+      if (res.url().includes('/api/v1/auth/register') && res.status() >= 400) {
+        failedRequests.push({ url: res.url(), status: res.status() })
+      }
+    })
+
+    await page.goto(UI_URL)
+    await page.getByText(/register/i).first().click()
+
+    await page.getByPlaceholder(/jane smith/i).fill(TEST_NAME)
+    await page.getByPlaceholder(/you@example\.com/i).fill(TEST_EMAIL)
+    // Fill password fields (some forms have confirm-password)
+    const passwordFields = page.getByPlaceholder(/password/i)
+    await passwordFields.first().fill(TEST_PASSWORD)
+    if (await passwordFields.count() > 1) {
+      await passwordFields.nth(1).fill(TEST_PASSWORD)
+    }
+
+    await page.getByRole('button', { name: /create account|register|sign up/i }).click()
+    await page.waitForTimeout(3000)
+
+    expect(failedRequests).toHaveLength(0),
+      `Registration API call failed: ${JSON.stringify(failedRequests)}`
+  })
+
+  test('successful registration redirects away from login page', async ({ page }) => {
+    // Use a fresh email — the previous test may have registered TEST_EMAIL
+    const freshEmail = `e2e-redir-${Date.now()}@example.com`
+
+    await page.goto(UI_URL)
+    await page.getByText(/register/i).first().click()
+
+    await page.getByPlaceholder(/jane smith/i).fill(TEST_NAME)
+    await page.getByPlaceholder(/you@example\.com/i).fill(freshEmail)
+    const passwordFields = page.getByPlaceholder(/password/i)
+    await passwordFields.first().fill(TEST_PASSWORD)
+    if (await passwordFields.count() > 1) {
+      await passwordFields.nth(1).fill(TEST_PASSWORD)
+    }
+
+    await page.getByRole('button', { name: /create account|register|sign up/i }).click()
+    // After successful registration the app should navigate to the dashboard
+    await expect(page.getByPlaceholder(/you@example\.com/i)).not.toBeVisible({ timeout: 10000 })
+  })
+})
+
+test.describe('Login flow (UI → API Gateway)', () => {
+  test('login with wrong password shows an error, not a 403', async ({ page }) => {
+    const fatalErrors = []
+    page.on('response', (res) => {
+      if (res.url().includes('/api/v1') && res.status() === 403) {
+        fatalErrors.push(res.url())
+      }
+    })
+
+    await page.goto(UI_URL)
+    await page.getByPlaceholder(/you@example\.com/i).fill('nobody@example.com')
+    await page.getByPlaceholder(/password/i).fill('WrongPass1!')
+    await page.getByRole('button', { name: /sign in|login/i }).click()
+    await page.waitForTimeout(2000)
+
+    // A 403 on an API endpoint means the URL is wrong (hitting S3/CloudFront)
+    expect(fatalErrors).toHaveLength(0),
+      `Got 403 on API call — bundle likely has wrong baseURL: ${fatalErrors.join(', ')}`
+  })
+})
