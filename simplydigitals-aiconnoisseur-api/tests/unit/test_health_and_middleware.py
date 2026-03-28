@@ -1,4 +1,5 @@
 """Unit tests for health endpoint and security middleware."""
+
 from __future__ import annotations
 
 from httpx import AsyncClient
@@ -37,6 +38,7 @@ class TestProtectedEndpoints:
         assert r.status_code in (401, 403)
 
     async def test_invalid_bearer_token_rejected(self, client: AsyncClient) -> None:
-        r = await client.get("/api/v1/models/",
-            headers={"Authorization": "Bearer totally.invalid.token"})
+        r = await client.get(
+            "/api/v1/models/", headers={"Authorization": "Bearer totally.invalid.token"}
+        )
         assert r.status_code == 401

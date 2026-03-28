@@ -14,13 +14,16 @@ def _clf_csv(rows: int = 150) -> bytes:
     writer = csv.writer(buf)
     writer.writerow(["feat_a", "feat_b", "label"])
     import random
+
     rng = random.Random(42)
     for _ in range(rows):
-        writer.writerow([
-            round(rng.gauss(0, 1), 4),
-            round(rng.gauss(5, 2), 4),
-            rng.choice(["cat", "dog"]),
-        ])
+        writer.writerow(
+            [
+                round(rng.gauss(0, 1), 4),
+                round(rng.gauss(5, 2), 4),
+                rng.choice(["cat", "dog"]),
+            ]
+        )
     return buf.getvalue().encode()
 
 
@@ -29,6 +32,7 @@ def _reg_csv(rows: int = 150) -> bytes:
     writer = csv.writer(buf)
     writer.writerow(["x", "y"])
     import random
+
     rng = random.Random(7)
     for i in range(rows):
         x = i / 10.0
@@ -108,9 +112,7 @@ class TestModelTraining:
         assert resp.status_code == 201
         assert "r2" in resp.json()["metrics"]
 
-    async def test_train_unknown_dataset_404(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_train_unknown_dataset_404(self, client: AsyncClient, auth_headers: dict) -> None:
         resp = await client.post(
             "/api/v1/models/train",
             json={
@@ -139,9 +141,7 @@ class TestModelTraining:
 
 
 class TestModelGetById:
-    async def test_get_own_model_by_id(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_get_own_model_by_id(self, client: AsyncClient, auth_headers: dict) -> None:
         ds_id = await _upload_dataset(client, auth_headers, "get-ds", _clf_csv())
         model = await _train_model(client, auth_headers, ds_id)
         r = await client.get(f"/api/v1/models/{model['id']}", headers=auth_headers)
@@ -160,9 +160,7 @@ class TestModelGetById:
 
 
 class TestModelListing:
-    async def test_list_models_empty(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_list_models_empty(self, client: AsyncClient, auth_headers: dict) -> None:
         resp = await client.get("/api/v1/models/", headers=auth_headers)
         assert resp.status_code == 200
         assert resp.json() == []
@@ -186,10 +184,12 @@ class TestModelPrediction:
 
         resp = await client.post(
             f"/api/v1/models/{model_id}/predict",
-            json={"data": [
-                {"feat_a": 0.5, "feat_b": 4.0},
-                {"feat_a": -1.0, "feat_b": 6.0},
-            ]},
+            json={
+                "data": [
+                    {"feat_a": 0.5, "feat_b": 4.0},
+                    {"feat_a": -1.0, "feat_b": 6.0},
+                ]
+            },
             headers=auth_headers,
         )
         assert resp.status_code == 200
@@ -210,9 +210,7 @@ class TestModelPrediction:
 
 
 class TestModelDelete:
-    async def test_delete_model(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_delete_model(self, client: AsyncClient, auth_headers: dict) -> None:
         ds_id = await _upload_dataset(client, auth_headers, "del-ds", _clf_csv())
         model = await _train_model(client, auth_headers, ds_id)
         model_id = model["id"]

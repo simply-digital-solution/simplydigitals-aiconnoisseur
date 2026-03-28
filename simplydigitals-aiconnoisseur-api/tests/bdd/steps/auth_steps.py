@@ -25,9 +25,7 @@ def step_user_exists(ctx: Context, email: str, password: str) -> None:
 
 @given('I am logged in as "{email}" with password "{password}"')
 def step_logged_in(ctx: Context, email: str, password: str) -> None:
-    response = ctx.client.post(
-        "/api/v1/auth/login", json={"email": email, "password": password}
-    )
+    response = ctx.client.post("/api/v1/auth/login", json={"email": email, "password": password})
     ctx.refresh_token = response.json().get("refresh_token")
     ctx.access_token = response.json().get("access_token")
 
@@ -71,9 +69,9 @@ def step_get_no_auth(ctx: Context, path: str) -> None:
 
 @then("the response status is {code:d}")
 def step_status(ctx: Context, code: int) -> None:
-    assert ctx.response.status_code == code, (
-        f"Expected {code}, got {ctx.response.status_code}. Body: {ctx.response.text}"
-    )
+    assert (
+        ctx.response.status_code == code
+    ), f"Expected {code}, got {ctx.response.status_code}. Body: {ctx.response.text}"
 
 
 @then('the response contains field "{field}"')

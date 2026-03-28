@@ -17,6 +17,7 @@ def _csv_bytes(rows: int = 50) -> bytes:
     writer = csv.writer(buf)
     writer.writerow(["feat_a", "feat_b", "label"])
     import random
+
     rng = random.Random(0)
     for _ in range(rows):
         writer.writerow([rng.gauss(0, 1), rng.gauss(5, 2), rng.choice(["yes", "no"])])
@@ -24,9 +25,7 @@ def _csv_bytes(rows: int = 50) -> bytes:
 
 
 class TestDatasetUpload:
-    async def test_upload_csv_returns_201(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_upload_csv_returns_201(self, client: AsyncClient, auth_headers: dict) -> None:
         response = await client.post(
             "/api/v1/datasets/",
             data={"name": "test-ds"},
@@ -39,9 +38,7 @@ class TestDatasetUpload:
         assert data["row_count"] == 50
         assert data["column_count"] == 3
 
-    async def test_upload_non_csv_rejected(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_upload_non_csv_rejected(self, client: AsyncClient, auth_headers: dict) -> None:
         response = await client.post(
             "/api/v1/datasets/",
             data={"name": "bad"},
@@ -71,9 +68,7 @@ class TestDatasetUpload:
 
 
 class TestDatasetList:
-    async def test_list_returns_own_datasets(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_list_returns_own_datasets(self, client: AsyncClient, auth_headers: dict) -> None:
         # Upload two datasets
         for i in range(2):
             await client.post(
@@ -86,18 +81,14 @@ class TestDatasetList:
         assert response.status_code == 200
         assert len(response.json()) >= 2
 
-    async def test_list_empty_for_new_user(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_list_empty_for_new_user(self, client: AsyncClient, auth_headers: dict) -> None:
         response = await client.get("/api/v1/datasets/", headers=auth_headers)
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
 
 class TestDatasetGetById:
-    async def test_get_own_dataset_by_id(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_get_own_dataset_by_id(self, client: AsyncClient, auth_headers: dict) -> None:
         upload = await client.post(
             "/api/v1/datasets/",
             data={"name": "get-ds"},
@@ -121,9 +112,7 @@ class TestDatasetGetById:
 
 
 class TestDatasetProfile:
-    async def test_profile_returns_stats(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_profile_returns_stats(self, client: AsyncClient, auth_headers: dict) -> None:
         upload = await client.post(
             "/api/v1/datasets/",
             data={"name": "profile-ds"},
@@ -132,9 +121,7 @@ class TestDatasetProfile:
         )
         ds_id = upload.json()["id"]
 
-        response = await client.get(
-            f"/api/v1/datasets/{ds_id}/profile", headers=auth_headers
-        )
+        response = await client.get(f"/api/v1/datasets/{ds_id}/profile", headers=auth_headers)
         assert response.status_code == 200
         profile = response.json()
         assert "profile" in profile
@@ -142,9 +129,7 @@ class TestDatasetProfile:
 
 
 class TestDatasetDelete:
-    async def test_delete_removes_dataset(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_delete_removes_dataset(self, client: AsyncClient, auth_headers: dict) -> None:
         upload = await client.post(
             "/api/v1/datasets/",
             data={"name": "to-delete"},
@@ -153,9 +138,7 @@ class TestDatasetDelete:
         )
         ds_id = upload.json()["id"]
 
-        delete_resp = await client.delete(
-            f"/api/v1/datasets/{ds_id}", headers=auth_headers
-        )
+        delete_resp = await client.delete(f"/api/v1/datasets/{ds_id}", headers=auth_headers)
         assert delete_resp.status_code in (200, 204)
 
         get_resp = await client.get(f"/api/v1/datasets/{ds_id}", headers=auth_headers)
@@ -164,7 +147,5 @@ class TestDatasetDelete:
     async def test_delete_nonexistent_returns_404(
         self, client: AsyncClient, auth_headers: dict
     ) -> None:
-        response = await client.delete(
-            "/api/v1/datasets/nonexistent-id", headers=auth_headers
-        )
+        response = await client.delete("/api/v1/datasets/nonexistent-id", headers=auth_headers)
         assert response.status_code == 404

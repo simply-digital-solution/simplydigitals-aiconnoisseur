@@ -20,6 +20,7 @@ def _csv_bytes() -> bytes:
     writer = csv.writer(buf)
     writer.writerow(["a", "b", "label"])
     import random
+
     rng = random.Random(0)
     for _ in range(50):
         writer.writerow([rng.gauss(0, 1), rng.gauss(1, 1), rng.choice(["x", "y"])])
@@ -27,26 +28,35 @@ def _csv_bytes() -> bytes:
 
 
 async def _register_and_login(client: AsyncClient, email: str) -> dict[str, str]:
-    await client.post("/api/v1/auth/register",
-        json={"email": email, "password": _PW, "full_name": "User"})
-    r = await client.post("/api/v1/auth/login",
-        json={"email": email, "password": _PW})
+    await client.post(
+        "/api/v1/auth/register", json={"email": email, "password": _PW, "full_name": "User"}
+    )
+    r = await client.post("/api/v1/auth/login", json={"email": email, "password": _PW})
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
 
 
 async def _upload(client: AsyncClient, headers: dict) -> str:
-    r = await client.post("/api/v1/datasets/",
+    r = await client.post(
+        "/api/v1/datasets/",
         data={"name": "ds"},
         files={"file": ("data.csv", _csv_bytes(), "text/csv")},
-        headers=headers)
+        headers=headers,
+    )
     return r.json()["id"]
 
 
 async def _train(client: AsyncClient, headers: dict, ds_id: str) -> str:
-    r = await client.post("/api/v1/models/train",
-        json={"name": "m", "dataset_id": ds_id, "algorithm": "classification",
-              "target_column": "label", "feature_columns": ["a", "b"]},
-        headers=headers)
+    r = await client.post(
+        "/api/v1/models/train",
+        json={
+            "name": "m",
+            "dataset_id": ds_id,
+            "algorithm": "classification",
+            "target_column": "label",
+            "feature_columns": ["a", "b"],
+        },
+        headers=headers,
+    )
     return r.json()["id"]
 
 
@@ -104,8 +114,9 @@ class TestModelIsolation:
         h2 = await _register_and_login(client, "mother3@test.com")
         ds_id = await _upload(client, h1)
         model_id = await _train(client, h1, ds_id)
-        r = await client.post(f"/api/v1/models/{model_id}/predict",
-            json={"data": [{"a": 0.1, "b": 0.2}]}, headers=h2)
+        r = await client.post(
+            f"/api/v1/models/{model_id}/predict", json={"data": [{"a": 0.1, "b": 0.2}]}, headers=h2
+        )
         assert r.status_code == 404
 
     async def test_list_returns_only_own_models(self, client: AsyncClient) -> None:

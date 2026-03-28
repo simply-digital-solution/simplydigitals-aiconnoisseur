@@ -1,4 +1,5 @@
 """Unit tests for UserService."""
+
 from __future__ import annotations
 
 import pytest
@@ -13,7 +14,8 @@ _PW = "Password1!"
 class TestUserService:
     async def test_create_user_stores_hashed_password(self, db_session: AsyncSession) -> None:
         user = await UserService(db_session).create(
-            UserCreate(email="a@b.com", password=_PW, full_name="Alice"))
+            UserCreate(email="a@b.com", password=_PW, full_name="Alice")
+        )
         assert user.hashed_password != _PW
 
     async def test_create_duplicate_email_raises_409(self, db_session: AsyncSession) -> None:

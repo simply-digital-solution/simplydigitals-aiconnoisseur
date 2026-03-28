@@ -47,9 +47,7 @@ def step_authenticated(ctx: Context, email: str) -> None:
         "/api/v1/auth/register",
         json={"email": email, "password": "Password123!", "full_name": "ML User"},
     )
-    resp = ctx.client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "Password123!"}
-    )
+    resp = ctx.client.post("/api/v1/auth/login", json={"email": email, "password": "Password123!"})
     ctx.auth_headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
@@ -164,9 +162,7 @@ def step_predict(ctx: Context) -> None:
 
 @when("I DELETE the model")
 def step_delete_model(ctx: Context) -> None:
-    ctx.response = ctx.client.delete(
-        f"/api/v1/models/{ctx.model_id}", headers=ctx.auth_headers
-    )
+    ctx.response = ctx.client.delete(f"/api/v1/models/{ctx.model_id}", headers=ctx.auth_headers)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
