@@ -399,7 +399,7 @@ function StageNode({ icon: Icon, label, sublabel, steps = [], status = 'idle' })
   const running = status === 'running'
   const done    = status === 'done'
   return (
-    <div className={`rounded-xl border p-4 flex flex-col gap-3 relative overflow-hidden transition-all duration-500
+    <div className={`h-full rounded-xl border p-4 flex flex-col gap-3 relative overflow-hidden transition-all duration-500
       ${done    ? 'border-emerald-500/40 bg-emerald-500/5' :
         running ? 'border-amber-400/50 bg-amber-500/5 stage-running' :
                   'border-ink-700/40 bg-ink-900/20 opacity-35'}`}>
@@ -491,12 +491,16 @@ function TechBadge({ text, color }) {
 const STEP_DURATIONS = [700, 1000, 1400, 2400, 1300, 1100, 1600, 2000]
 
 function PipelineView() {
-  const [step, setStep] = useState(-1)
+  const [step, setStep]             = useState(-1)
+  const [autoScroll, setAutoScroll] = useState(true)
+  const [replayKey, setReplayKey]   = useState(0)
+  const cardRef       = useRef(null)
   const triggerRef    = useRef(null)
   const orchRef       = useRef(null)
   const parallelRef   = useRef(null)
   const postDeployRef = useRef(null)
 
+  // Pipeline animation loop (always runs, independent of scroll)
   useEffect(() => {
     let current = 0
     let t
@@ -507,28 +511,57 @@ function PipelineView() {
         if (current < STEP_DURATIONS.length) {
           advance()
         } else {
-          setStep(STEP_DURATIONS.length)          // all-done
-          t = setTimeout(() => {
-            current = 0
-            setStep(-1)                           // brief reset
-            setTimeout(advance, 400)
-          }, 2800)
+          setStep(STEP_DURATIONS.length)          // all-done — stop here
         }
       }, STEP_DURATIONS[current])
     }
     const init = setTimeout(advance, 600)
     return () => { clearTimeout(t); clearTimeout(init) }
+  }, [replayKey])
+
+  // Stop auto-scroll when post-deploy stage is reached
+  useEffect(() => {
+    if (step === STEP_DURATIONS.length) setAutoScroll(false)
+  }, [step])
+
+  // Detect user wheel / touch → stop auto-scroll
+  useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+    const stop = () => setAutoScroll(false)
+    card.addEventListener('wheel',      stop, { passive: true })
+    card.addEventListener('touchstart', stop, { passive: true })
+    return () => {
+      card.removeEventListener('wheel',      stop)
+      card.removeEventListener('touchstart', stop)
+    }
   }, [])
 
+  // Scroll active stage into view within the card
   useEffect(() => {
+    if (!autoScroll) return
     const refMap = { 0: triggerRef, 1: orchRef }
     for (let i = 2; i <= 6; i++) refMap[i] = parallelRef
     refMap[7] = postDeployRef
-    const ref = refMap[step]
-    if (ref?.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, [step])
+    const card = cardRef.current
+    const el   = refMap[step]?.current
+    if (!card || !el) return
+    // compute element's top relative to the scrollable card
+    const scrollTarget = el.getBoundingClientRect().top
+                       - card.getBoundingClientRect().top
+                       + card.scrollTop - 16
+    card.scrollTo({ top: scrollTarget, behavior: 'smooth' })
+  }, [step, autoScroll])
+
+  function handleReplay() {
+    setStep(-1)
+    cardRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    setTimeout(() => {
+      setAutoScroll(true)
+      setReplayKey(k => k + 1)
+    }, 300)
+  }
+
 
   function ss(forStep) {
     if (step < 0) return 'idle'
@@ -565,28 +598,37 @@ function PipelineView() {
         .stage-running { animation: glow-amber 1.8s ease-in-out infinite; }
       `}</style>
 
-      <div className="card p-6 overflow-y-auto" style={{ maxHeight: '72vh' }}>
+      <div ref={cardRef} className="card p-6 overflow-y-auto" style={{ maxHeight: '72vh' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-ink-200 text-sm font-display font-600 uppercase tracking-wider">
             GitHub Actions Workflow
           </div>
-          {allDone ? (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-              <Check className="w-3 h-3 text-emerald-400" />
-              <span className="text-emerald-300 text-xs font-mono font-600">ALL CHECKS PASSED</span>
-            </div>
-          ) : step >= 0 ? (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-amber-300 text-xs font-mono">pipeline running</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-ink-800 border border-ink-700">
-              <div className="w-1.5 h-1.5 rounded-full bg-ink-600" />
-              <span className="text-ink-500 text-xs font-mono">waiting for push</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button onClick={handleReplay} disabled={autoScroll}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-mono transition-colors
+                ${autoScroll
+                  ? 'bg-ink-800 border-ink-700 text-ink-600 cursor-not-allowed'
+                  : 'bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20 text-purple-300 cursor-pointer'}`}>
+              <RefreshCw className="w-3 h-3" /> Replay scroll
+            </button>
+            {allDone ? (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <Check className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-300 text-xs font-mono font-600">ALL CHECKS PASSED</span>
+              </div>
+            ) : step >= 0 ? (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-amber-300 text-xs font-mono">pipeline running</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-ink-800 border border-ink-700">
+                <div className="w-1.5 h-1.5 rounded-full bg-ink-600" />
+                <span className="text-ink-500 text-xs font-mono">waiting for push</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Trigger — top of the flow */}
@@ -617,37 +659,45 @@ function PipelineView() {
           ))}
         </div>
 
-        {/* Parallel pipelines — natural order: first stage at top, last at bottom */}
-        <div className="grid grid-cols-2 gap-4" ref={parallelRef}>
-          <div>
-            <div className={`text-xs font-mono text-center mb-2 uppercase tracking-wider transition-colors duration-500
-              ${ss(2) === 'done' ? 'text-emerald-600' : ss(2) === 'running' ? 'text-amber-500' : 'text-ink-600'}`}>
-              API Pipeline
-            </div>
-            <StageNode icon={Code2}     label="Lint"          sublabel="Ruff · feature branches"          status={ss(2)} steps={['ruff check --fix', 'ruff-format', 'pre-commit hooks']} />
-            <FlowLine status={cs(3)} />
-            <StageNode icon={TestTube2} label="Unit Tests"    sublabel="pytest · 70% coverage enforced"   status={ss(3)} steps={['25+ test files', 'pytest-asyncio', 'SQLite in-memory DB', 'factory-boy fixtures']} />
-            <FlowLine status={cs(4)} />
-            <StageNode icon={Terminal}  label="Build"         sublabel="Docker multi-stage · layer cache" status={ss(4)} steps={['docker build --target production', 'Layer caching enabled', 'Image size optimised']} />
-            <FlowLine status={cs(5)} />
-            <StageNode icon={Package}   label="ECR Push"      sublabel="digest-pinned image tag"          status={ss(5)} steps={['docker tag + push to ECR', 'SHA digest pinned', 'Image vulnerability scan']} />
-            <FlowLine status={cs(6)} />
-            <StageNode icon={Zap}       label="Lambda Deploy" sublabel="zero-downtime function update"    status={ss(6)} steps={['update-function-code', 'Alembic DB migration', 'Health check gate']} />
+        {/* Parallel pipelines — row-by-row grid so each stage pair shares height */}
+        <div className="space-y-0" ref={parallelRef}>
+          {/* Column labels */}
+          <div className="grid grid-cols-2 gap-4 mb-2">
+            {[['API Pipeline', 2], ['UI Pipeline', 2]].map(([label, s]) => (
+              <div key={label} className={`text-xs font-mono text-center uppercase tracking-wider transition-colors duration-500
+                ${ss(s) === 'done' ? 'text-emerald-600' : ss(s) === 'running' ? 'text-amber-500' : 'text-ink-600'}`}>
+                {label}
+              </div>
+            ))}
           </div>
-          <div>
-            <div className={`text-xs font-mono text-center mb-2 uppercase tracking-wider transition-colors duration-500
-              ${ss(2) === 'done' ? 'text-emerald-600' : ss(2) === 'running' ? 'text-amber-500' : 'text-ink-600'}`}>
-              UI Pipeline
-            </div>
-            <StageNode icon={Code2}     label="Lint"          sublabel="ESLint 9 · feature branches"       status={ss(2)} steps={['ESLint React/Hooks rules', 'JS/JSX validation']} />
-            <FlowLine status={cs(3)} />
-            <StageNode icon={TestTube2} label="Unit Tests"    sublabel="Vitest · 30% threshold"            status={ss(3)} steps={['4 test suites', 'jsdom environment', 'MSW API mocking', '@testing-library/react']} />
-            <FlowLine status={cs(4)} />
-            <StageNode icon={Code2}     label="Build"         sublabel="Vite production · env injected"    status={ss(4)} steps={['vite build --mode production', 'VITE_API_BASE_URL baked in', 'Tree-shaking + minify']} />
-            <FlowLine status={cs(5)} />
-            <StageNode icon={Upload}    label="S3 Sync"       sublabel="versioned assets · cache headers"  status={ss(5)} steps={['aws s3 sync dist/ s3://…', 'Cache-Control: max-age=31536000', 'Content-hash filenames']} />
-            <FlowLine status={cs(6)} />
-            <StageNode icon={Cloud}     label="CloudFront"    sublabel="global edge invalidation"          status={ss(6)} steps={['create-invalidation /*', 'Edge propagation ~30s', 'Atomic — no stale state']} />
+          {/* Lint */}
+          <div className="grid grid-cols-2 gap-4 items-stretch">
+            <StageNode icon={Code2}     label="Lint"       sublabel="Ruff · feature branches"          status={ss(2)} steps={['ruff check --fix', 'ruff-format', 'pre-commit hooks']} />
+            <StageNode icon={Code2}     label="Lint"       sublabel="ESLint 9 · feature branches"       status={ss(2)} steps={['ESLint React/Hooks rules', 'JS/JSX validation', 'pre-commit hooks']} />
+          </div>
+          <div className="grid grid-cols-2 gap-4"><FlowLine status={cs(3)} /><FlowLine status={cs(3)} /></div>
+          {/* Unit Tests */}
+          <div className="grid grid-cols-2 gap-4 items-stretch">
+            <StageNode icon={TestTube2} label="Unit Tests" sublabel="pytest · 70% coverage enforced"   status={ss(3)} steps={['25+ test files', 'pytest-asyncio', 'SQLite in-memory DB', 'factory-boy fixtures']} />
+            <StageNode icon={TestTube2} label="Unit Tests" sublabel="Vitest · 30% threshold"            status={ss(3)} steps={['4 test suites', 'jsdom environment', 'MSW API mocking', '@testing-library/react']} />
+          </div>
+          <div className="grid grid-cols-2 gap-4"><FlowLine status={cs(4)} /><FlowLine status={cs(4)} /></div>
+          {/* Build */}
+          <div className="grid grid-cols-2 gap-4 items-stretch">
+            <StageNode icon={Terminal}  label="Build"      sublabel="Docker multi-stage · layer cache" status={ss(4)} steps={['docker build --target production', 'Layer caching enabled', 'Image size optimised']} />
+            <StageNode icon={Code2}     label="Build"      sublabel="Vite production · env injected"    status={ss(4)} steps={['vite build --mode production', 'VITE_API_BASE_URL baked in', 'Tree-shaking + minify']} />
+          </div>
+          <div className="grid grid-cols-2 gap-4"><FlowLine status={cs(5)} /><FlowLine status={cs(5)} /></div>
+          {/* Push / Sync */}
+          <div className="grid grid-cols-2 gap-4 items-stretch">
+            <StageNode icon={Package}   label="ECR Push"   sublabel="digest-pinned image tag"          status={ss(5)} steps={['docker tag + push to ECR', 'SHA digest pinned', 'Image vulnerability scan']} />
+            <StageNode icon={Upload}    label="S3 Sync"    sublabel="versioned assets · cache headers"  status={ss(5)} steps={['aws s3 sync dist/ s3://…', 'Cache-Control: max-age=31536000', 'Content-hash filenames']} />
+          </div>
+          <div className="grid grid-cols-2 gap-4"><FlowLine status={cs(6)} /><FlowLine status={cs(6)} /></div>
+          {/* Deploy */}
+          <div className="grid grid-cols-2 gap-4 items-stretch">
+            <StageNode icon={Zap}       label="Lambda Deploy" sublabel="zero-downtime function update" status={ss(6)} steps={['update-function-code', 'Alembic DB migration', 'Health check gate']} />
+            <StageNode icon={Cloud}     label="CloudFront"    sublabel="global edge invalidation"       status={ss(6)} steps={['create-invalidation /*', 'Edge propagation ~30s', 'Atomic — no stale state']} />
           </div>
         </div>
 
