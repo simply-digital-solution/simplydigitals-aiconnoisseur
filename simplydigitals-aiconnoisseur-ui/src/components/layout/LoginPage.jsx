@@ -39,7 +39,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-ink-950"
       style={{
-        backgroundImage: 'radial-gradient(ellipse 70% 60% at 50% -20%, rgba(0,201,138,0.08) 0%, transparent 70%)',
+        backgroundImage: 'radial-gradient(ellipse 70% 60% at 50% -20%, rgba(147,51,234,0.10) 0%, transparent 70%)',
       }}>
 
       {/* Grid overlay */}
@@ -48,13 +48,13 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md animate-fade-up">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-jade-500/15 border border-jade-500/30 mb-4 animate-pulse-jade">
-            <Cpu className="w-7 h-7 text-jade-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 mb-4 animate-pulse-purple">
+            <Cpu className="w-7 h-7 text-purple-400" />
           </div>
           <h1 className="font-display text-3xl font-700 text-ink-50">
-            AI<span className="text-gradient-jade">Connoisseur</span>
+            AI<span className="text-gradient-purple">Connoisseur</span>
           </h1>
-          <p className="text-ink-400 text-sm mt-1 font-body">ML Analytics Platform by Simply Digital Solutions</p>
+          <p className="text-ink-200 text-sm mt-1 font-body">ML Analytics Platform by Simply Digital Solutions</p>
         </div>
 
         <div className="card p-8">
@@ -63,7 +63,7 @@ export default function LoginPage() {
             {['login', 'register'].map((m) => (
               <button key={m} onClick={() => setMode(m)}
                 className={`flex-1 py-2 text-sm font-display font-500 rounded-lg transition-all duration-200 capitalize
-                  ${mode === m ? 'bg-ink-600 text-ink-100 shadow-sm' : 'text-ink-400 hover:text-ink-200'}`}>
+                  ${mode === m ? 'bg-ink-600 text-ink-50 shadow-sm' : 'text-ink-200 hover:text-ink-50'}`}>
                 {m}
               </button>
             ))}

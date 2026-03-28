@@ -96,6 +96,24 @@ jobs:
       S3_UI_BUCKET:               ${{ secrets.S3_UI_BUCKET }}
       CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 
+  # ── Post-Deploy Integration Tests ───────────────────────────────────────────
+  # Runs only after a successful merge-to-main deploy.
+  # At least one of api/ui must have deployed (not just skipped).
+  post-deploy-tests:
+    name: Post-Deploy Integration Tests
+    needs: [api, ui]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.api.result != 'failure' &&
+      needs.ui.result != 'failure' &&
+      (needs.api.result == 'success' || needs.ui.result == 'success')
+    uses: ./.github/workflows/post-deploy-tests.yml
+    secrets:
+      PROD_API_URL: ${{ secrets.PROD_API_URL }}
+      PROD_UI_URL:  ${{ secrets.PROD_UI_URL }}
+
   # ── PR Summary comment ──────────────────────────────────────────────────────
   summary:
     name: PR Summary

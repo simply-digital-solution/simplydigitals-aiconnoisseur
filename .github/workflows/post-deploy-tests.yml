@@ -1,0 +1,77 @@
+name: Post-Deploy Integration Tests
+
+# Called by orchestrator.yml after both API and UI have deployed to production.
+# Requires two GitHub secrets to be configured in the repo:
+#
+#   PROD_API_URL   https://<api-gateway-id>.execute-api.ap-southeast-2.amazonaws.com
+#   PROD_UI_URL    https://<cloudfront-id>.cloudfront.net
+#
+# The tests hit live production endpoints — no mocks, no in-memory DB.
+
+on:
+  workflow_call:
+    secrets:
+      PROD_API_URL: { required: true }
+      PROD_UI_URL:  { required: false }
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    name: Integration Tests (live production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: simplydigitals-aiconnoisseur-api/pyproject.toml
+
+      # Install only what integration tests need — no FastAPI app dependencies
+      - name: Install test dependencies
+        run: pip install httpx pytest pytest-junitxml
+
+      # Wait for Lambda cold-start — the deploy step already verified /health
+      # but we give it a few extra seconds for full warm-up before hammering auth
+      - name: Wait for Lambda warm-up
+        run: sleep 15
+
+      - name: Run smoke tests
+        working-directory: simplydigitals-aiconnoisseur-api
+        env:
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+          PROD_UI_URL:  ${{ secrets.PROD_UI_URL }}
+        run: |
+          pytest tests/integration/test_smoke.py \
+            -v \
+            --override-ini="addopts=" \
+            --junitxml=smoke-results.xml \
+            --tb=short
+
+      - name: Run auth end-to-end tests
+        working-directory: simplydigitals-aiconnoisseur-api
+        env:
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+          PROD_UI_URL:  ${{ secrets.PROD_UI_URL }}
+        run: |
+          pytest tests/integration/test_auth_e2e.py \
+            -v \
+            -p no:randomly \
+            --override-ini="addopts=" \
+            --junitxml=auth-e2e-results.xml \
+            --tb=short
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results-${{ github.run_id }}
+          path: |
+            simplydigitals-aiconnoisseur-api/smoke-results.xml
+            simplydigitals-aiconnoisseur-api/auth-e2e-results.xml
+          retention-days: 30

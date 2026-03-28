@@ -65,7 +65,7 @@ function MetricBar({ label, value, max = 1, color, suffix = '' }) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-ink-400 font-display">{label}</span>
+        <span className="text-ink-200 font-display">{label}</span>
         <span className="font-mono font-500" style={{ color }}>{value?.toFixed(4)}{suffix}</span>
       </div>
       <div className="h-2 bg-ink-800 rounded-full overflow-hidden">
@@ -80,9 +80,9 @@ function ModelCard({ model, isWinner }) {
   const isClassification = 'accuracy' in (model.metrics || {})
   return (
     <div className={`card p-5 space-y-4 transition-all duration-300 relative
-      ${isWinner ? 'border-jade-500/50 shadow-lg shadow-jade-500/10' : ''}`}>
+      ${isWinner ? 'border-purple-500/50 shadow-lg shadow-purple-500/10' : ''}`}>
       {isWinner && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 bg-jade-500 rounded-full text-ink-950 text-xs font-display font-600">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 bg-purple-500 rounded-full text-ink-950 text-xs font-display font-600">
           <Trophy className="w-3.5 h-3.5" /> Best Model
         </div>
       )}
@@ -191,7 +191,7 @@ export default function ABTestingSection() {
       {/* Header */}
       <div>
         <h2 className="font-display text-2xl font-700 text-ink-50">A/B Testing</h2>
-        <p className="text-ink-400 text-sm mt-0.5">Compare multiple models head-to-head with your preprocessed data.</p>
+        <p className="text-ink-200 text-sm mt-0.5">Compare multiple models head-to-head with your preprocessed data.</p>
       </div>
 
       {/* Config reminder */}
@@ -275,10 +275,10 @@ export default function ABTestingSection() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barData} barGap={4} barCategoryGap={24}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="name" tick={{ fill: '#6B6B8A', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#6B6B8A', fontSize: 12 }} domain={[0, 1]} />
-                <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #2E2E42', borderRadius: 8 }} />
-                <Legend wrapperStyle={{ color: '#9494B0', fontSize: 12 }} />
+                <XAxis dataKey="name" tick={{ fill: '#B4B4CC', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#B4B4CC', fontSize: 12 }} domain={[0, 1]} />
+                <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #4A4A68', borderRadius: 8 }} />
+                <Legend wrapperStyle={{ color: '#B4B4CC', fontSize: 12 }} />
                 {taskType === 'classification' ? (
                   <>
                     <Bar dataKey="accuracy" name="Accuracy" radius={[4, 4, 0, 0]}>
@@ -304,13 +304,13 @@ export default function ABTestingSection() {
               <ResponsiveContainer width="100%" height={300}>
                 <RadarChart data={radarData}>
                   <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                  <PolarAngleAxis dataKey="metric" tick={{ fill: '#9494B0', fontSize: 12 }} />
+                  <PolarAngleAxis dataKey="metric" tick={{ fill: '#B4B4CC', fontSize: 12 }} />
                   {results.map((r) => (
                     <Radar key={r.id} name={r.name} dataKey={r.name}
                       stroke={r.color} fill={r.color} fillOpacity={0.15} strokeWidth={2} />
                   ))}
-                  <Legend wrapperStyle={{ color: '#9494B0', fontSize: 12 }} />
-                  <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #2E2E42', borderRadius: 8 }} />
+                  <Legend wrapperStyle={{ color: '#B4B4CC', fontSize: 12 }} />
+                  <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #4A4A68', borderRadius: 8 }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -331,7 +331,7 @@ export default function ABTestingSection() {
                       <div className="h-2.5 rounded-full transition-all duration-700"
                         style={{ width: `${pct}%`, background: r.color }} />
                     </div>
-                    <span className="font-mono text-xs text-ink-400 w-16 text-right flex-shrink-0">
+                    <span className="font-mono text-xs text-ink-200 w-16 text-right flex-shrink-0">
                       {r.training_duration_seconds?.toFixed(3)}s
                     </span>
                   </div>
@@ -352,7 +352,7 @@ export default function ABTestingSection() {
                 <div className="font-display font-600 text-ink-100">
                   <span style={{ color: winner.color }}>{winner.name}</span> is the top performer
                 </div>
-                <div className="text-ink-400 text-sm mt-0.5">
+                <div className="text-ink-200 text-sm mt-0.5">
                   {taskType === 'classification'
                     ? `Accuracy: ${(winner.metrics?.accuracy * 100).toFixed(1)}% · F1: ${(winner.metrics?.f1_weighted * 100).toFixed(1)}%`
                     : `R²: ${winner.metrics?.r2?.toFixed(4)} · MAE: ${winner.metrics?.mae?.toFixed(4)}`

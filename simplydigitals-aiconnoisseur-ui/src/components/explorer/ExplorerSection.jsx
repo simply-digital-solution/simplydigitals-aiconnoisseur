@@ -51,8 +51,8 @@ export default function ExplorerSection() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl font-700 text-ink-50">Data Explorer</h2>
-          <p className="text-ink-400 text-sm mt-0.5">
-            Exploring <span className="text-jade-400 font-mono">{activeDataset.name}</span>
+          <p className="text-ink-200 text-sm mt-0.5">
+            Exploring <span className="text-purple-400 font-mono">{activeDataset.name}</span>
           </p>
         </div>
         <div className="relative">
@@ -66,13 +66,13 @@ export default function ExplorerSection() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Rows', value: (parsedData?.length || activeDataset.row_count)?.toLocaleString(), color: 'jade' },
+          { label: 'Total Rows', value: (parsedData?.length || activeDataset.row_count)?.toLocaleString(), color: 'purple' },
           { label: 'Columns', value: columns.length, color: 'violet' },
           { label: 'Numeric', value: numericCount, color: 'amber' },
-          { label: 'Null Values', value: totalNulls.toLocaleString(), color: totalNulls > 0 ? 'rose' : 'jade' },
+          { label: 'Null Values', value: totalNulls.toLocaleString(), color: totalNulls > 0 ? 'rose' : 'purple' },
         ].map(({ label, value, color }) => (
           <div key={label} className="stat-card">
-            <span className="text-xs font-display font-500 text-ink-500 uppercase tracking-wider">{label}</span>
+            <span className="text-xs font-display font-500 text-ink-200 uppercase tracking-wider">{label}</span>
             <span className={`text-2xl font-display font-700 text-${color}-400`}>{value}</span>
           </div>
         ))}
@@ -93,7 +93,7 @@ export default function ExplorerSection() {
               <thead>
                 <tr className="bg-ink-800/60 border-b border-ink-700/50">
                   {['Column', 'Type', 'Count', 'Unique', 'Nulls', 'Min', 'Max', 'Mean'].map((h) => (
-                    <th key={h} className="text-left py-3 px-4 text-ink-400 font-display font-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    <th key={h} className="text-left py-3 px-4 text-ink-200 font-display font-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -103,7 +103,7 @@ export default function ExplorerSection() {
                   if (!s) return null
                   return (
                     <tr key={col} className={`border-b border-ink-800/60 hover:bg-ink-800/30 transition-colors ${i % 2 === 0 ? '' : 'bg-ink-900/30'}`}>
-                      <td className="py-2.5 px-4 font-mono text-jade-400 font-500 text-xs whitespace-nowrap">{col}</td>
+                      <td className="py-2.5 px-4 font-mono text-purple-400 font-500 text-xs whitespace-nowrap">{col}</td>
                       <td className="py-2.5 px-4">
                         <span className={s.isNumeric ? 'badge-amber' : 'badge-violet'}>{s.dtype}</span>
                       </td>
@@ -112,12 +112,12 @@ export default function ExplorerSection() {
                       <td className="py-2.5 px-4">
                         {s.nullCount > 0
                           ? <span className="badge-rose">{s.nullCount} ({s.nullPct}%)</span>
-                          : <span className="text-jade-500 text-xs font-mono">✓ None</span>
+                          : <span className="text-purple-500 text-xs font-mono">✓ None</span>
                         }
                       </td>
-                      <td className="py-2.5 px-4 text-ink-400 font-mono text-xs">{s.isNumeric ? s.min?.toFixed(2) : '—'}</td>
-                      <td className="py-2.5 px-4 text-ink-400 font-mono text-xs">{s.isNumeric ? s.max?.toFixed(2) : '—'}</td>
-                      <td className="py-2.5 px-4 text-ink-400 font-mono text-xs">{s.isNumeric ? s.mean?.toFixed(2) : '—'}</td>
+                      <td className="py-2.5 px-4 text-ink-200 font-mono text-xs">{s.isNumeric ? s.min?.toFixed(2) : '—'}</td>
+                      <td className="py-2.5 px-4 text-ink-200 font-mono text-xs">{s.isNumeric ? s.max?.toFixed(2) : '—'}</td>
+                      <td className="py-2.5 px-4 text-ink-200 font-mono text-xs">{s.isNumeric ? s.mean?.toFixed(2) : '—'}</td>
                     </tr>
                   )
                 })}
@@ -183,9 +183,9 @@ export default function ExplorerSection() {
                 unique: columnStats[c]?.unique || 0,
                 type: columnStats[c]?.isNumeric ? 1 : 0,
               }))}>
-                <XAxis dataKey="name" tick={{ fill: '#6B6B8A', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
-                <YAxis tick={{ fill: '#6B6B8A', fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #2E2E42', borderRadius: 8, fontFamily: 'DM Sans' }} />
+                <XAxis dataKey="name" tick={{ fill: '#B4B4CC', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
+                <YAxis tick={{ fill: '#B4B4CC', fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: '#1A1A24', border: '1px solid #4A4A68', borderRadius: 8, fontFamily: 'DM Sans' }} />
                 <Bar dataKey="unique" radius={[4, 4, 0, 0]}>
                   {filteredCols.slice(0, 20).map((c) => (
                     <Cell key={c} fill={columnStats[c]?.isNumeric ? '#F59E0B' : '#8B5CF6'} />
@@ -202,16 +202,16 @@ export default function ExplorerSection() {
         <div className="space-y-4 animate-fade-in">
           <div className="grid grid-cols-3 gap-4">
             <div className="stat-card">
-              <span className="text-xs font-display text-ink-500 uppercase tracking-wider">Columns with Nulls</span>
+              <span className="text-xs font-display text-ink-200 uppercase tracking-wider">Columns with Nulls</span>
               <span className="text-2xl font-display font-700 text-rose-400">{nullyCols}</span>
             </div>
             <div className="stat-card">
-              <span className="text-xs font-display text-ink-500 uppercase tracking-wider">Total Null Cells</span>
+              <span className="text-xs font-display text-ink-200 uppercase tracking-wider">Total Null Cells</span>
               <span className="text-2xl font-display font-700 text-amber-400">{totalNulls.toLocaleString()}</span>
             </div>
             <div className="stat-card">
-              <span className="text-xs font-display text-ink-500 uppercase tracking-wider">Complete Columns</span>
-              <span className="text-2xl font-display font-700 text-jade-400">{columns.length - nullyCols}</span>
+              <span className="text-xs font-display text-ink-200 uppercase tracking-wider">Complete Columns</span>
+              <span className="text-2xl font-display font-700 text-purple-400">{columns.length - nullyCols}</span>
             </div>
           </div>
 
@@ -223,7 +223,7 @@ export default function ExplorerSection() {
                 const pct = parseFloat(s?.nullPct || 0)
                 return (
                   <div key={col} className="flex items-center gap-3">
-                    <div className="font-mono text-xs text-ink-400 w-32 truncate flex-shrink-0">{col}</div>
+                    <div className="font-mono text-xs text-ink-200 w-32 truncate flex-shrink-0">{col}</div>
                     <div className="flex-1 bg-ink-800 rounded-full h-2">
                       <div className="h-2 rounded-full transition-all duration-500"
                         style={{
@@ -232,7 +232,7 @@ export default function ExplorerSection() {
                         }} />
                     </div>
                     <div className={`text-xs font-mono w-16 text-right flex-shrink-0
-                      ${pct > 30 ? 'text-rose-400' : pct > 10 ? 'text-amber-400' : 'text-jade-400'}`}>
+                      ${pct > 30 ? 'text-rose-400' : pct > 10 ? 'text-amber-400' : 'text-purple-400'}`}>
                       {s?.nullCount || 0} ({pct}%)
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export default function ExplorerSection() {
                 <tr>
                   <th className="p-2 text-left text-ink-500 w-32"></th>
                   {numericCols.map((c) => (
-                    <th key={c} className="p-2 text-ink-400 whitespace-nowrap" style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)', height: 100 }}>
+                    <th key={c} className="p-2 text-ink-200 whitespace-nowrap" style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)', height: 100 }}>
                       {c.length > 14 ? c.slice(0, 14) + '…' : c}
                     </th>
                   ))}
@@ -261,7 +261,7 @@ export default function ExplorerSection() {
               <tbody>
                 {numericCols.map((r) => (
                   <tr key={r}>
-                    <td className="p-2 text-ink-400 whitespace-nowrap font-mono text-xs pr-4">{r.length > 14 ? r.slice(0, 14) + '…' : r}</td>
+                    <td className="p-2 text-ink-200 whitespace-nowrap font-mono text-xs pr-4">{r.length > 14 ? r.slice(0, 14) + '…' : r}</td>
                     {numericCols.map((c) => {
                       const v = matrix[r]?.[c] ?? 0
                       return (
@@ -269,7 +269,7 @@ export default function ExplorerSection() {
                           className="p-0 text-center"
                           style={{ background: corBg(v), width: 48, height: 48 }}>
                           <div className="w-12 h-12 flex items-center justify-center text-xs font-mono"
-                            style={{ color: Math.abs(v) > 0.5 ? '#fff' : '#9494B0' }}>
+                            style={{ color: Math.abs(v) > 0.5 ? '#fff' : '#D2D2E4' }}>
                             {v.toFixed(2)}
                           </div>
                         </td>
@@ -298,9 +298,9 @@ export default function ExplorerSection() {
                   .slice(0, 8)
                   .map(({ r, c, v }) => (
                     <div key={`${r}-${c}`} className="flex items-center gap-3">
-                      <span className="font-mono text-xs text-ink-400 flex-1 truncate">{r} × {c}</span>
+                      <span className="font-mono text-xs text-ink-200 flex-1 truncate">{r} × {c}</span>
                       <div className="flex items-center gap-1.5">
-                        {v > 0.2 ? <TrendingUp className="w-3.5 h-3.5 text-jade-400" /> :
+                        {v > 0.2 ? <TrendingUp className="w-3.5 h-3.5 text-purple-400" /> :
                          v < -0.2 ? <TrendingDown className="w-3.5 h-3.5 text-rose-400" /> :
                          <Minus className="w-3.5 h-3.5 text-ink-500" />}
                         <span className="font-mono text-sm font-500" style={{ color: corColor(v) }}>{v.toFixed(3)}</span>

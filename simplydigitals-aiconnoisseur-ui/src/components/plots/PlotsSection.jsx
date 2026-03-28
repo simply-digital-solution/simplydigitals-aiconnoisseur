@@ -37,7 +37,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
     <div className="card-glass px-3 py-2 text-xs shadow-xl">
-      <p className="text-ink-400 mb-1">{label}</p>
+      <p className="text-ink-200 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="font-mono">
           {p.name}: {typeof p.value === 'number' ? p.value.toFixed(3) : p.value}
@@ -52,7 +52,7 @@ function BoxPlotCard({ col, stats }) {
   const pct = (v) => ((v - stats.min) / range * 100).toFixed(1) + '%'
   return (
     <div className="card p-4 space-y-3">
-      <div className="font-mono text-jade-400 text-xs font-500">{col}</div>
+      <div className="font-mono text-purple-400 text-xs font-500">{col}</div>
       <div className="relative h-10 flex items-center">
         {/* whiskers */}
         <div className="absolute h-0.5 bg-ink-500" style={{ left: '0%', right: `${100 - parseFloat(pct(stats.q1))}%` }} />
@@ -61,7 +61,7 @@ function BoxPlotCard({ col, stats }) {
         <div className="absolute h-6 bg-violet-500/30 border border-violet-500/60 rounded-sm"
           style={{ left: pct(stats.q1), width: `${parseFloat(pct(stats.q3)) - parseFloat(pct(stats.q1))}%` }} />
         {/* median */}
-        <div className="absolute h-6 w-0.5 bg-jade-400"
+        <div className="absolute h-6 w-0.5 bg-purple-400"
           style={{ left: pct(stats.median) }} />
         {/* mean dot */}
         <div className="absolute w-2 h-2 rounded-full bg-amber-400 -translate-y-0"
@@ -113,7 +113,7 @@ export default function PlotsSection() {
     <div className="space-y-6 animate-fade-up">
       <div>
         <h2 className="font-display text-2xl font-700 text-ink-50">Visualisations</h2>
-        <p className="text-ink-400 text-sm mt-0.5">Explore distributions, relationships, and patterns in your data.</p>
+        <p className="text-ink-200 text-sm mt-0.5">Explore distributions, relationships, and patterns in your data.</p>
       </div>
 
       {/* Plot type selector */}
@@ -122,8 +122,8 @@ export default function PlotsSection() {
           <button key={id} onClick={() => setPlotType(id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display font-500 border transition-all duration-200
               ${plotType === id
-                ? 'bg-jade-500/15 text-jade-400 border-jade-500/30'
-                : 'bg-ink-800/50 text-ink-400 border-ink-700/50 hover:text-ink-200 hover:border-ink-600'
+                ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                : 'bg-ink-800/50 text-ink-200 border-ink-600 hover:text-ink-50 hover:border-ink-500'
               }`}>
             <Icon className="w-4 h-4" />
             {label}
@@ -162,13 +162,13 @@ export default function PlotsSection() {
       {/* ── Histogram ── */}
       {plotType === 'histogram' && xCol && (
         <div className="card p-6 animate-fade-in">
-          <h3 className="font-display font-600 text-ink-100 mb-1">Histogram — <span className="text-jade-400 font-mono">{xCol}</span></h3>
+          <h3 className="font-display font-600 text-ink-100 mb-1">Histogram — <span className="text-purple-400 font-mono">{xCol}</span></h3>
           <p className="text-ink-500 text-xs mb-5">Distribution of values across {bins} equal-width bins</p>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={histData} margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="bin" tick={{ fill: '#6B6B8A', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
-              <YAxis tick={{ fill: '#6B6B8A', fontSize: 11 }} />
+              <XAxis dataKey="bin" tick={{ fill: '#B4B4CC', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
+              <YAxis tick={{ fill: '#B4B4CC', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" fill="#00C98A" radius={[3, 3, 0, 0]} fillOpacity={0.85} />
             </BarChart>
@@ -192,14 +192,14 @@ export default function PlotsSection() {
       {plotType === 'scatter' && xCol && yCol && (
         <div className="card p-6 animate-fade-in">
           <h3 className="font-display font-600 text-ink-100 mb-1">
-            Scatter — <span className="text-jade-400 font-mono">{xCol}</span> × <span className="text-violet-400 font-mono">{yCol}</span>
+            Scatter — <span className="text-purple-400 font-mono">{xCol}</span> × <span className="text-violet-400 font-mono">{yCol}</span>
           </h3>
           <p className="text-ink-500 text-xs mb-5">Showing up to 500 points</p>
           <ResponsiveContainer width="100%" height={380}>
             <ScatterChart>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="x" name={xCol} tick={{ fill: '#6B6B8A', fontSize: 11 }} label={{ value: xCol, fill: '#9494B0', fontSize: 12, position: 'insideBottom', offset: -4 }} />
-              <YAxis dataKey="y" name={yCol} tick={{ fill: '#6B6B8A', fontSize: 11 }} label={{ value: yCol, fill: '#9494B0', fontSize: 12, angle: -90, position: 'insideLeft' }} />
+              <XAxis dataKey="x" name={xCol} tick={{ fill: '#B4B4CC', fontSize: 11 }} label={{ value: xCol, fill: '#B4B4CC', fontSize: 12, position: 'insideBottom', offset: -4 }} />
+              <YAxis dataKey="y" name={yCol} tick={{ fill: '#B4B4CC', fontSize: 11 }} label={{ value: yCol, fill: '#B4B4CC', fontSize: 12, angle: -90, position: 'insideLeft' }} />
               <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
               <Scatter data={scatterData} fill="#8B5CF6" fillOpacity={0.6} />
             </ScatterChart>
@@ -210,14 +210,14 @@ export default function PlotsSection() {
       {/* ── CDF / Distribution ── */}
       {plotType === 'distribution' && xCol && (
         <div className="card p-6 animate-fade-in">
-          <h3 className="font-display font-600 text-ink-100 mb-1">Cumulative Distribution — <span className="text-jade-400 font-mono">{xCol}</span></h3>
+          <h3 className="font-display font-600 text-ink-100 mb-1">Cumulative Distribution — <span className="text-purple-400 font-mono">{xCol}</span></h3>
           <p className="text-ink-500 text-xs mb-5">Empirical cumulative distribution function (ECDF)</p>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={distData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="value" tick={{ fill: '#6B6B8A', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              <XAxis dataKey="value" tick={{ fill: '#B4B4CC', fontSize: 11, fontFamily: 'JetBrains Mono' }}
                 tickFormatter={(v) => Number(v).toFixed(1)} />
-              <YAxis tick={{ fill: '#6B6B8A', fontSize: 11 }} tickFormatter={(v) => v + '%'} />
+              <YAxis tick={{ fill: '#B4B4CC', fontSize: 11 }} tickFormatter={(v) => v + '%'} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="cumulative" stroke="#00C98A" fill="rgba(0,201,138,0.12)" strokeWidth={2} dot={false} />
             </LineChart>
@@ -238,7 +238,7 @@ export default function PlotsSection() {
                   const hd = buildHistogram(columnStats[c1]?.values || [], 12)
                   return (
                     <div key={`${c1}-${c2}`} className="card p-2 h-36">
-                      <div className="text-jade-400 text-xs font-mono mb-1 truncate">{c1}</div>
+                      <div className="text-purple-400 text-xs font-mono mb-1 truncate">{c1}</div>
                       <ResponsiveContainer width="100%" height={90}>
                         <BarChart data={hd} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                           <Bar dataKey="count" fill={PALETTE[i % PALETTE.length]} radius={[2, 2, 0, 0]} />

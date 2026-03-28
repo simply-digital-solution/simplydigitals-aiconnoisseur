@@ -16,15 +16,18 @@
   }
 
   body {
-    @apply bg-ink-950 text-ink-100 font-body antialiased;
+    @apply bg-ink-950 text-ink-50 font-body antialiased;
     background-image:
-      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,201,138,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(147,51,234,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(192,132,252,0.05) 0%, transparent 60%);
     min-height: 100vh;
+    font-size: 1.125rem;   /* 18px base — WCAG minimum for 40+ users */
+    line-height: 1.7;
+    letter-spacing: 0.01em;
   }
 
   ::selection {
-    @apply bg-jade-500/30 text-jade-200;
+    @apply bg-purple-500/30 text-purple-200;
   }
 
   ::-webkit-scrollbar {
@@ -44,47 +47,47 @@
 
 @layer components {
   .card {
-    @apply bg-ink-900 border border-ink-700/60 rounded-2xl;
+    @apply bg-ink-900 border border-ink-600 rounded-2xl;
   }
 
   .card-glass {
-    @apply bg-ink-900/60 backdrop-blur-xl border border-ink-700/40 rounded-2xl;
+    @apply bg-ink-900/60 backdrop-blur-xl border border-ink-600/80 rounded-2xl;
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-jade-500 hover:bg-jade-400
-           text-ink-950 font-display font-600 text-sm rounded-xl
-           transition-all duration-200 hover:shadow-lg hover:shadow-jade-500/25
+    @apply inline-flex items-center gap-2 px-5 py-3 bg-purple-500 hover:bg-purple-400
+           text-white font-display font-600 text-base rounded-xl
+           transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/25
            disabled:opacity-40 disabled:cursor-not-allowed active:scale-95;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-ink-800 hover:bg-ink-700
-           text-ink-200 font-body text-sm rounded-xl border border-ink-600/60
+    @apply inline-flex items-center gap-2 px-5 py-3 bg-ink-800 hover:bg-ink-700
+           text-ink-50 font-body text-base rounded-xl border border-ink-500
            transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-3 py-2 text-ink-400 hover:text-ink-100
-           hover:bg-ink-800 rounded-lg transition-all duration-150 text-sm;
+    @apply inline-flex items-center gap-2 px-4 py-2.5 text-ink-200 hover:text-ink-50
+           hover:bg-ink-800 rounded-lg transition-all duration-150 text-base;
   }
 
   .tab-item {
-    @apply px-4 py-2 text-sm font-display font-500 rounded-lg transition-all duration-200 cursor-pointer;
+    @apply px-5 py-2.5 text-base font-display font-500 rounded-lg transition-all duration-200 cursor-pointer;
   }
 
   .tab-item.active {
-    @apply bg-jade-500/15 text-jade-400 border border-jade-500/30;
+    @apply bg-purple-500/20 text-purple-200 border border-purple-400/60;
   }
 
   .tab-item:not(.active) {
-    @apply text-ink-400 hover:text-ink-200 hover:bg-ink-800;
+    @apply text-ink-200 hover:text-ink-50 hover:bg-ink-800;
   }
 
   .input {
-    @apply w-full bg-ink-800 border border-ink-600/60 rounded-xl px-3.5 py-2.5
-           text-ink-100 text-sm placeholder:text-ink-500
-           focus:outline-none focus:border-jade-500/60 focus:ring-2 focus:ring-jade-500/10
+    @apply w-full bg-ink-800 border border-ink-500 rounded-xl px-4 py-3
+           text-ink-50 text-base placeholder:text-ink-400
+           focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20
            transition-all duration-200;
   }
 
@@ -93,27 +96,27 @@
   }
 
   .label {
-    @apply text-xs font-display font-500 text-ink-400 uppercase tracking-wider mb-1.5 block;
+    @apply text-sm font-display font-500 text-ink-100 uppercase tracking-wider mb-2 block;
   }
 
   .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-500;
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-sm font-mono font-500;
   }
 
-  .badge-jade {
-    @apply badge bg-jade-500/15 text-jade-400 border border-jade-500/25;
+  .badge-purple {
+    @apply badge bg-purple-500/20 text-purple-200 border border-purple-400/60;
   }
 
   .badge-violet {
-    @apply badge bg-violet-500/15 text-violet-400 border border-violet-500/25;
+    @apply badge bg-violet-500/20 text-violet-300 border border-violet-400/60;
   }
 
   .badge-amber {
-    @apply badge bg-amber-500/15 text-amber-400 border border-amber-500/25;
+    @apply badge bg-amber-500/20 text-amber-300 border border-amber-400/60;
   }
 
   .badge-rose {
-    @apply badge bg-rose-500/15 text-rose-400 border border-rose-500/25;
+    @apply badge bg-rose-500/20 text-rose-300 border border-rose-400/60;
   }
 
   .stat-card {
@@ -134,8 +137,8 @@
 @layer utilities {
   .font-500 { font-weight: 500; }
   .font-600 { font-weight: 600; }
-  .text-gradient-jade {
-    background: linear-gradient(135deg, #00C98A, #5EEABC);
+  .text-gradient-purple {
+    background: linear-gradient(135deg, #9333EA, #D8B4FE);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -146,7 +149,7 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .glow-jade {
-    box-shadow: 0 0 24px rgba(0,201,138,0.2);
+  .glow-purple {
+    box-shadow: 0 0 24px rgba(147,51,234,0.25);
   }
 }
