@@ -166,6 +166,37 @@ jobs:
             --cache-control "no-cache,no-store,must-revalidate" \
             --content-type "text/html"
 
+      - name: Configure CloudFront SPA error pages
+        run: |
+          DIST_ID="${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
+          if [ -z "$DIST_ID" ]; then
+            echo "No CloudFront distribution ID — skipping"
+            exit 0
+          fi
+          CONFIG=$(aws cloudfront get-distribution-config --id "$DIST_ID")
+          ETAG=$(echo "$CONFIG" | jq -r '.ETag')
+          DIST_CONFIG=$(echo "$CONFIG" | jq '.DistributionConfig')
+
+          # Idempotent: only update if 403 → 200 not already set
+          ALREADY=$(echo "$DIST_CONFIG" | jq '[.CustomErrorResponses.Items[]? | select(.ErrorCode == 403 and .ResponseCode == "200")] | length')
+          if [ "$ALREADY" -gt 0 ]; then
+            echo "SPA error pages already configured — skipping"
+            exit 0
+          fi
+
+          UPDATED=$(echo "$DIST_CONFIG" | jq '.CustomErrorResponses = {
+            "Quantity": 2,
+            "Items": [
+              {"ErrorCode": 403, "ResponsePagePath": "/index.html", "ResponseCode": "200", "ErrorCachingMinTTL": 0},
+              {"ErrorCode": 404, "ResponsePagePath": "/index.html", "ResponseCode": "200", "ErrorCachingMinTTL": 0}
+            ]
+          }')
+          aws cloudfront update-distribution \
+            --id "$DIST_ID" \
+            --distribution-config "$UPDATED" \
+            --if-match "$ETAG"
+          echo "CloudFront SPA error pages configured (403 + 404 → /index.html)"
+
       - name: Invalidate CloudFront
         run: |
           DIST_ID="${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
