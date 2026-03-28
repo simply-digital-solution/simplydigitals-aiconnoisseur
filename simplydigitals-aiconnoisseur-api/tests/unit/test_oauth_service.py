@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.modules.auth.models import AuthProvider, User
 from app.modules.auth.schemas import UserCreate
 from app.modules.auth.service import OAuthProfile, UserService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _PROFILE = OAuthProfile(
     provider_id="google-sub-123",
