@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    optimizeDeps: {
+      exclude: ['playwright', 'playwright-core', '@playwright/test'],
+    },
     server: {
       port: 3000,
       proxy: {
