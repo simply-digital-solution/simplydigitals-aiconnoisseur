@@ -16,16 +16,22 @@ branch_labels = None
 depends_on = None
 
 
+_authprovider = sa.Enum("local", "google", "facebook", name="authprovider")
+
+
 def upgrade() -> None:
     # Make hashed_password nullable — OAuth users have no password
     op.alter_column("users", "hashed_password", nullable=True)
 
     op.add_column("users", sa.Column("avatar_url", sa.String(512), nullable=True))
+
+    # Create the enum type explicitly before the column (required for PostgreSQL)
+    _authprovider.create(op.get_bind(), checkfirst=True)
     op.add_column(
         "users",
         sa.Column(
             "auth_provider",
-            sa.Enum("local", "google", "facebook", name="authprovider"),
+            _authprovider,
             nullable=False,
             server_default="local",
         ),
@@ -40,4 +46,4 @@ def downgrade() -> None:
     op.drop_column("users", "auth_provider")
     op.drop_column("users", "avatar_url")
     op.alter_column("users", "hashed_password", nullable=False)
-    op.execute("DROP TYPE IF EXISTS authprovider")
+    _authprovider.drop(op.get_bind(), checkfirst=True)
