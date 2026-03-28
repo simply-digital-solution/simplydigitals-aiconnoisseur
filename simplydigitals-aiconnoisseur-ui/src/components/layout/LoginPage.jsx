@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Cpu } from 'lucide-react'
+import { Eye, EyeOff, Cpu, LayoutDashboard } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { authApi } from '../../utils/api'
 import { useStore } from '../../store'
@@ -58,6 +58,13 @@ export default function LoginPage() {
         </div>
 
         <div className="card p-8">
+          {/* Tech Architecture link */}
+          <button onClick={() => window.open('/showcase', '_blank')}
+            className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/15 text-purple-300 text-sm font-display font-500 transition-all duration-200 mb-6">
+            <LayoutDashboard className="w-4 h-4" />
+            View Tech Architecture
+          </button>
+
           {/* Mode toggle */}
           <div className="flex gap-1 p-1 bg-ink-800 rounded-xl mb-8">
             {['login', 'register'].map((m) => (

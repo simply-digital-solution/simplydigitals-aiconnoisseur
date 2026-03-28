@@ -4,6 +4,7 @@ import { useStore } from './store'
 import Layout from './components/layout/Layout'
 import LoginPage from './components/layout/LoginPage'
 import Dashboard from './components/layout/Dashboard'
+import TechShowcasePage from './components/showcase/TechShowcasePage'
 import { authApi } from './utils/api'
 
 function ProtectedRoute({ children }) {
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/showcase" element={<TechShowcasePage />} />
       <Route
         path="/*"
         element={

@@ -13,6 +13,9 @@ vi.mock('../components/layout/Layout', () => ({
 vi.mock('../components/layout/Dashboard', () => ({
   default: () => <div data-testid="dashboard">Dashboard</div>,
 }))
+vi.mock('../components/showcase/TechShowcasePage', () => ({
+  default: () => <div data-testid="showcase">Showcase</div>,
+}))
 
 import App from '../App'
 import { useStore } from '../store'
