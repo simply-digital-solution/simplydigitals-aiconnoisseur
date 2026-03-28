@@ -81,6 +81,42 @@ class TestRefresh:
         assert r.status_code == 401
 
 
+class TestMe:
+    async def test_me_returns_user_profile(self, client: AsyncClient) -> None:
+        await client.post("/api/v1/auth/register",
+            json={"email": "me@example.com", "password": _PW, "full_name": "Me User"})
+        login = await client.post("/api/v1/auth/login",
+            json={"email": "me@example.com", "password": _PW})
+        token = login.json()["access_token"]
+        r = await client.get("/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {token}"})
+        assert r.status_code == 200
+        body = r.json()
+        assert body["email"] == "me@example.com"
+        assert body["full_name"] == "Me User"
+
+    async def test_me_has_no_sensitive_fields(self, client: AsyncClient) -> None:
+        await client.post("/api/v1/auth/register",
+            json={"email": "me2@example.com", "password": _PW, "full_name": "Me2"})
+        login = await client.post("/api/v1/auth/login",
+            json={"email": "me2@example.com", "password": _PW})
+        token = login.json()["access_token"]
+        r = await client.get("/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {token}"})
+        body = r.json()
+        assert "hashed_password" not in body
+        assert "password" not in body
+
+    async def test_me_requires_auth(self, client: AsyncClient) -> None:
+        r = await client.get("/api/v1/auth/me")
+        assert r.status_code in (401, 403)
+
+    async def test_me_rejects_invalid_token(self, client: AsyncClient) -> None:
+        r = await client.get("/api/v1/auth/me",
+            headers={"Authorization": "Bearer not.a.valid.token"})
+        assert r.status_code in (401, 403)
+
+
 class TestRegisterEdgeCases:
     async def test_missing_full_name_rejected(self, client: AsyncClient) -> None:
         r = await client.post("/api/v1/auth/register",

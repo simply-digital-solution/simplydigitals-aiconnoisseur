@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.auth.models import AuthProvider
+from app.modules.auth.dependencies import get_current_user
+from app.modules.auth.models import AuthProvider, User
 from app.modules.auth.oauth import verify_facebook_token, verify_google_token
 from app.modules.auth.schemas import (
     FacebookLoginRequest,
@@ -25,6 +26,11 @@ from app.shared.security import create_access_token, create_refresh_token, decod
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+@router.get("/me", response_model=UserRead)
+async def me(current_user: User = Depends(get_current_user)) -> UserRead:
+    return UserRead.model_validate(current_user)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)

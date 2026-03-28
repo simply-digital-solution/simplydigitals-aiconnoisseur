@@ -8,6 +8,7 @@ export const useStore = create((set) => ({
     localStorage.setItem('token', token)
     set({ token })
   },
+  setUser: (user) => set({ user }),
   clearAuth: () => {
     localStorage.removeItem('token')
     set({ token: null, user: null })
