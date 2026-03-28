@@ -1,4 +1,5 @@
 """Unit tests for app.core.security."""
+
 from __future__ import annotations
 
 import pytest

@@ -44,9 +44,7 @@ async def _upload(client: AsyncClient, headers: dict, name: str, content: bytes)
 
 
 class TestDescribeEndpoint:
-    async def test_describe_returns_stats(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_describe_returns_stats(self, client: AsyncClient, auth_headers: dict) -> None:
         ds_id = await _upload(client, auth_headers, "num-ds", _numeric_csv())
         response = await client.post(
             "/api/v1/analytics/describe",
@@ -58,9 +56,7 @@ class TestDescribeEndpoint:
         # describe() returns column-keyed dict
         assert any(col in data for col in ("x", "y", "z"))
 
-    async def test_describe_specific_columns(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_describe_specific_columns(self, client: AsyncClient, auth_headers: dict) -> None:
         ds_id = await _upload(client, auth_headers, "num-ds2", _numeric_csv())
         response = await client.post(
             "/api/v1/analytics/describe",
@@ -96,9 +92,7 @@ class TestCorrelationEndpoint:
         # Diagonal should be 1.0
         assert abs(matrix["x"]["x"] - 1.0) < 0.001
 
-    async def test_correlation_symmetric(
-        self, client: AsyncClient, auth_headers: dict
-    ) -> None:
+    async def test_correlation_symmetric(self, client: AsyncClient, auth_headers: dict) -> None:
         ds_id = await _upload(client, auth_headers, "corr-sym", _numeric_csv())
         response = await client.post(
             "/api/v1/analytics/correlation",

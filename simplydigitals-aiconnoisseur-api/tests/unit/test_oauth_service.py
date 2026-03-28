@@ -18,9 +18,7 @@ _PROFILE = OAuthProfile(
 
 class TestGetOrCreateOAuthUser:
     async def test_creates_new_oauth_user(self, db_session: AsyncSession) -> None:
-        user = await UserService(db_session).get_or_create_oauth_user(
-            _PROFILE, AuthProvider.GOOGLE
-        )
+        user = await UserService(db_session).get_or_create_oauth_user(_PROFILE, AuthProvider.GOOGLE)
         assert user.email == "oauth@example.com"
         assert user.auth_provider == AuthProvider.GOOGLE
         assert user.oauth_provider_id == "google-sub-123"
@@ -57,9 +55,7 @@ class TestGetOrCreateOAuthUser:
         assert linked.oauth_provider_id == "google-sub-123"
 
     async def test_oauth_user_has_no_password(self, db_session: AsyncSession) -> None:
-        user = await UserService(db_session).get_or_create_oauth_user(
-            _PROFILE, AuthProvider.GOOGLE
-        )
+        user = await UserService(db_session).get_or_create_oauth_user(_PROFILE, AuthProvider.GOOGLE)
         assert user.hashed_password is None
 
     async def test_oauth_user_cannot_login_with_password(self, db_session: AsyncSession) -> None:

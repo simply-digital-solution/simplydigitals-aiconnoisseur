@@ -39,13 +39,15 @@ def _profile_dataframe(df: pd.DataFrame) -> dict[str, Any]:
         }
         if pd.api.types.is_numeric_dtype(series):
             desc = series.describe()
-            profile[col].update({
-                "mean": float(desc.get("mean", 0)),
-                "std": float(desc.get("std", 0)),
-                "min": float(desc.get("min", 0)),
-                "max": float(desc.get("max", 0)),
-                "median": float(series.median()),
-            })
+            profile[col].update(
+                {
+                    "mean": float(desc.get("mean", 0)),
+                    "std": float(desc.get("std", 0)),
+                    "min": float(desc.get("min", 0)),
+                    "max": float(desc.get("max", 0)),
+                    "median": float(series.median()),
+                }
+            )
     return profile
 
 

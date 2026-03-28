@@ -23,17 +23,17 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 # ── Colours ───────────────────────────────────────────────────────────────────
-GREEN  = "\033[92m"
-RED    = "\033[91m"
+GREEN = "\033[92m"
+RED = "\033[91m"
 YELLOW = "\033[93m"
-CYAN   = "\033[96m"
-BOLD   = "\033[1m"
-RESET  = "\033[0m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
 # ── State ─────────────────────────────────────────────────────────────────────
 results: list[dict[str, Any]] = []
@@ -143,7 +143,7 @@ def check(
 def save_json(output_dir: Path, base_url: str) -> Path:
     payload = {
         "meta": {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "base_url": base_url,
             "total": passed + failed,
             "passed": passed,
@@ -161,7 +161,7 @@ def save_json(output_dir: Path, base_url: str) -> Path:
 def save_html(output_dir: Path, base_url: str) -> Path:
     total = passed + failed
     duration = round((time.perf_counter() - start_time) * 1000, 1)
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    ts = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     pass_pct = round((passed / total * 100) if total else 0, 1)
 
     groups: dict[str, list[dict]] = {}
@@ -178,8 +178,16 @@ def save_html(output_dir: Path, base_url: str) -> Path:
             status_cls = "pass" if r["passed"] else "fail"
             icon = "✔" if r["passed"] else "✘"
             snippet = r["response_snippet"].replace("<", "&lt;").replace(">", "&gt;")
-            fail_note = f'<div class="fail-reason">{r["failure_reason"]}</div>' if not r["passed"] else ""
-            ms_cls = "ms-fast" if r["duration_ms"] < 500 else "ms-slow" if r["duration_ms"] > 2000 else "ms-ok"
+            fail_note = (
+                f'<div class="fail-reason">{r["failure_reason"]}</div>' if not r["passed"] else ""
+            )
+            ms_cls = (
+                "ms-fast"
+                if r["duration_ms"] < 500
+                else "ms-slow"
+                if r["duration_ms"] > 2000
+                else "ms-ok"
+            )
             rows_html += f"""
         <tr class="{status_cls}-row">
           <td><span class="badge {status_cls}">{icon}</span></td>
@@ -523,8 +531,8 @@ def wait_for_server(base_url: str, retries: int = 10) -> bool:
 
 # ── Main test suite ───────────────────────────────────────────────────────────
 def run(base_url: str, output_dir: Path, open_report: bool) -> None:
-    unique   = uuid.uuid4().hex[:8]
-    email    = f"smoke_{unique}@test.com"
+    unique = uuid.uuid4().hex[:8]
+    email = f"smoke_{unique}@test.com"
     password = "SmokeTest123!"
 
     print(f"\n{BOLD}{'═' * 62}{RESET}")
@@ -538,97 +546,214 @@ def run(base_url: str, output_dir: Path, open_report: bool) -> None:
 
     # ── Health ────────────────────────────────────────────────────────────────
     print(f"\n{BOLD}Health{RESET}")
-    c("GET /health → 200",          "GET", f"{base_url}/health",
-      expected_status=200, assert_keys=["status"], group="Health")
+    c(
+        "GET /health → 200",
+        "GET",
+        f"{base_url}/health",
+        expected_status=200,
+        assert_keys=["status"],
+        group="Health",
+    )
     # /metrics returns Prometheus plain text — check separately without JSON parsing
-    print(f"  ", end="")
+    print("  ", end="")
     try:
         with urllib.request.urlopen(f"{base_url}/metrics", timeout=5) as resp:
             raw = resp.read().decode(errors="replace")
             ok = resp.status == 200 and "http_" in raw
             icon = f"{GREEN}✔{RESET}" if ok else f"{RED}✘{RESET}"
             status_color = GREEN if ok else RED
-            print(f"{icon}  {'GET /metrics → 200 (Prometheus text)':<48} {status_color}{resp.status}{RESET}  {GREEN}ok{RESET}")
-            results.append({"name": "GET /metrics → 200 (Prometheus text)", "group": "Health",
-                "method": "GET", "url": f"{base_url}/metrics", "expected_status": 200,
-                "actual_status": resp.status, "duration_ms": 0, "passed": ok,
-                "failure_reason": "", "response_snippet": raw[:120]})
-            if ok: globals()["passed"] += 1
-            else:  globals()["failed"] += 1
+            print(
+                f"{icon}  {'GET /metrics → 200 (Prometheus text)':<48} {status_color}{resp.status}{RESET}  {GREEN}ok{RESET}"
+            )
+            results.append(
+                {
+                    "name": "GET /metrics → 200 (Prometheus text)",
+                    "group": "Health",
+                    "method": "GET",
+                    "url": f"{base_url}/metrics",
+                    "expected_status": 200,
+                    "actual_status": resp.status,
+                    "duration_ms": 0,
+                    "passed": ok,
+                    "failure_reason": "",
+                    "response_snippet": raw[:120],
+                }
+            )
+            if ok:
+                globals()["passed"] += 1
+            else:
+                globals()["failed"] += 1
     except Exception as ex:
         print(f"{RED}✘{RESET}  {'GET /metrics → 200 (Prometheus text)':<48} {RED}error{RESET}")
-        results.append({"name": "GET /metrics → 200 (Prometheus text)", "group": "Health",
-            "method": "GET", "url": f"{base_url}/metrics", "expected_status": 200,
-            "actual_status": 0, "duration_ms": 0, "passed": False,
-            "failure_reason": str(ex), "response_snippet": ""})
+        results.append(
+            {
+                "name": "GET /metrics → 200 (Prometheus text)",
+                "group": "Health",
+                "method": "GET",
+                "url": f"{base_url}/metrics",
+                "expected_status": 200,
+                "actual_status": 0,
+                "duration_ms": 0,
+                "passed": False,
+                "failure_reason": str(ex),
+                "response_snippet": "",
+            }
+        )
         globals()["failed"] += 1
 
     # ── Authentication ────────────────────────────────────────────────────────
     print(f"\n{BOLD}Authentication{RESET}")
-    c("POST /auth/register → 201",  "POST", f"{base_url}/api/v1/auth/register",
-      body={"email": email, "password": password, "full_name": "Smoke Test"},
-      expected_status=201, assert_keys=["id", "email"],
-      assert_not_keys=["hashed_password"], group="Authentication")
+    c(
+        "POST /auth/register → 201",
+        "POST",
+        f"{base_url}/api/v1/auth/register",
+        body={"email": email, "password": password, "full_name": "Smoke Test"},
+        expected_status=201,
+        assert_keys=["id", "email"],
+        assert_not_keys=["hashed_password"],
+        group="Authentication",
+    )
 
-    c("POST /auth/register duplicate → 409", "POST", f"{base_url}/api/v1/auth/register",
-      body={"email": email, "password": password, "full_name": "Smoke Test"},
-      expected_status=409, group="Authentication")
+    c(
+        "POST /auth/register duplicate → 409",
+        "POST",
+        f"{base_url}/api/v1/auth/register",
+        body={"email": email, "password": password, "full_name": "Smoke Test"},
+        expected_status=409,
+        group="Authentication",
+    )
 
-    r = c("POST /auth/login → 200", "POST", f"{base_url}/api/v1/auth/login",
-          body={"email": email, "password": password},
-          expected_status=200, assert_keys=["access_token", "refresh_token", "token_type"],
-          group="Authentication")
-    token   = r.get("response", {}).get("access_token", "")
+    r = c(
+        "POST /auth/login → 200",
+        "POST",
+        f"{base_url}/api/v1/auth/login",
+        body={"email": email, "password": password},
+        expected_status=200,
+        assert_keys=["access_token", "refresh_token", "token_type"],
+        group="Authentication",
+    )
+    token = r.get("response", {}).get("access_token", "")
     refresh = r.get("response", {}).get("refresh_token", "")
     if not token:
         print(f"  {YELLOW}⚠  Could not extract token — auth-dependent tests will be skipped{RESET}")
 
-    c("POST /auth/login wrong password → 401", "POST", f"{base_url}/api/v1/auth/login",
-      body={"email": email, "password": "WrongPass!"}, expected_status=401,
-      group="Authentication")
+    c(
+        "POST /auth/login wrong password → 401",
+        "POST",
+        f"{base_url}/api/v1/auth/login",
+        body={"email": email, "password": "WrongPass!"},
+        expected_status=401,
+        group="Authentication",
+    )
 
-    c("POST /auth/refresh → 200",   "POST", f"{base_url}/api/v1/auth/refresh",
-      body={"refresh_token": refresh}, expected_status=200,
-      assert_keys=["access_token"], group="Authentication")
+    c(
+        "POST /auth/refresh → 200",
+        "POST",
+        f"{base_url}/api/v1/auth/refresh",
+        body={"refresh_token": refresh},
+        expected_status=200,
+        assert_keys=["access_token"],
+        group="Authentication",
+    )
 
     # ── Auth guards ───────────────────────────────────────────────────────────
     print(f"\n{BOLD}Auth guards{RESET}")
-    c("GET /datasets/ no token → 403",  "GET", f"{base_url}/api/v1/datasets/",
-      expected_status=403, group="Auth guards")
-    c("GET /models/ no token → 403",    "GET", f"{base_url}/api/v1/models/",
-      expected_status=403, group="Auth guards")
-    c("GET /models/ bad token → 401",   "GET", f"{base_url}/api/v1/models/",
-      token="bad.token.value", expected_status=401, group="Auth guards")
+    c(
+        "GET /datasets/ no token → 403",
+        "GET",
+        f"{base_url}/api/v1/datasets/",
+        expected_status=403,
+        group="Auth guards",
+    )
+    c(
+        "GET /models/ no token → 403",
+        "GET",
+        f"{base_url}/api/v1/models/",
+        expected_status=403,
+        group="Auth guards",
+    )
+    c(
+        "GET /models/ bad token → 401",
+        "GET",
+        f"{base_url}/api/v1/models/",
+        token="bad.token.value",
+        expected_status=401,
+        group="Auth guards",
+    )
 
     # ── Datasets ──────────────────────────────────────────────────────────────
     print(f"\n{BOLD}Datasets{RESET}")
-    c("GET /datasets/ authenticated → 200", "GET", f"{base_url}/api/v1/datasets/",
-      token=token, expected_status=200, group="Datasets")
-    c("GET /datasets/bad-id → 404",  "GET", f"{base_url}/api/v1/datasets/nonexistent",
-      token=token, expected_status=404, group="Datasets")
+    c(
+        "GET /datasets/ authenticated → 200",
+        "GET",
+        f"{base_url}/api/v1/datasets/",
+        token=token,
+        expected_status=200,
+        group="Datasets",
+    )
+    c(
+        "GET /datasets/bad-id → 404",
+        "GET",
+        f"{base_url}/api/v1/datasets/nonexistent",
+        token=token,
+        expected_status=404,
+        group="Datasets",
+    )
 
     # ── Models ────────────────────────────────────────────────────────────────
     print(f"\n{BOLD}Models{RESET}")
-    c("GET /models/ authenticated → 200",   "GET", f"{base_url}/api/v1/models/",
-      token=token, expected_status=200, group="Models")
-    c("GET /models/bad-id → 404",    "GET", f"{base_url}/api/v1/models/nonexistent",
-      token=token, expected_status=404, group="Models")
-    c("POST /models/train bad dataset → 404", "POST", f"{base_url}/api/v1/models/train",
-      token=token,
-      body={"name": "smoke", "dataset_id": "nonexistent", "algorithm": "classification",
-            "target_column": "label", "feature_columns": ["a", "b"]},
-      expected_status=404, group="Models")
+    c(
+        "GET /models/ authenticated → 200",
+        "GET",
+        f"{base_url}/api/v1/models/",
+        token=token,
+        expected_status=200,
+        group="Models",
+    )
+    c(
+        "GET /models/bad-id → 404",
+        "GET",
+        f"{base_url}/api/v1/models/nonexistent",
+        token=token,
+        expected_status=404,
+        group="Models",
+    )
+    c(
+        "POST /models/train bad dataset → 404",
+        "POST",
+        f"{base_url}/api/v1/models/train",
+        token=token,
+        body={
+            "name": "smoke",
+            "dataset_id": "nonexistent",
+            "algorithm": "classification",
+            "target_column": "label",
+            "feature_columns": ["a", "b"],
+        },
+        expected_status=404,
+        group="Models",
+    )
 
     # ── Analytics ─────────────────────────────────────────────────────────────
     print(f"\n{BOLD}Analytics{RESET}")
-    c("POST /analytics/describe bad dataset → 404",     "POST",
-      f"{base_url}/api/v1/analytics/describe",
-      token=token, body={"dataset_id": "nonexistent"}, expected_status=404,
-      group="Analytics")
-    c("POST /analytics/correlation bad dataset → 404",  "POST",
-      f"{base_url}/api/v1/analytics/correlation",
-      token=token, body={"dataset_id": "nonexistent"}, expected_status=404,
-      group="Analytics")
+    c(
+        "POST /analytics/describe bad dataset → 404",
+        "POST",
+        f"{base_url}/api/v1/analytics/describe",
+        token=token,
+        body={"dataset_id": "nonexistent"},
+        expected_status=404,
+        group="Analytics",
+    )
+    c(
+        "POST /analytics/correlation bad dataset → 404",
+        "POST",
+        f"{base_url}/api/v1/analytics/correlation",
+        token=token,
+        body={"dataset_id": "nonexistent"},
+        expected_status=404,
+        group="Analytics",
+    )
 
     # ── Security headers ──────────────────────────────────────────────────────
     print(f"\n{BOLD}Security headers{RESET}")
@@ -645,18 +770,22 @@ def run(base_url: str, output_dir: Path, open_report: bool) -> None:
             ok = actual == expected_value
             icon = f"{GREEN}✔{RESET}" if ok else f"{RED}✘{RESET}"
             print(f"  {icon}  {header}: {GREEN if ok else RED}{actual}{RESET}")
-            results.append({
-                "name": f"Header: {header}",
-                "group": "Security headers",
-                "method": "GET",
-                "url": f"{base_url}/health",
-                "expected_status": 200,
-                "actual_status": 200,
-                "duration_ms": 0,
-                "passed": ok,
-                "failure_reason": f"Expected '{expected_value}', got '{actual}'" if not ok else "",
-                "response_snippet": f"{header}: {actual}",
-            })
+            results.append(
+                {
+                    "name": f"Header: {header}",
+                    "group": "Security headers",
+                    "method": "GET",
+                    "url": f"{base_url}/health",
+                    "expected_status": 200,
+                    "actual_status": 200,
+                    "duration_ms": 0,
+                    "passed": ok,
+                    "failure_reason": f"Expected '{expected_value}', got '{actual}'"
+                    if not ok
+                    else "",
+                    "response_snippet": f"{header}: {actual}",
+                }
+            )
             if ok:
                 globals()["passed"] += 1
             else:
@@ -688,17 +817,27 @@ def run(base_url: str, output_dir: Path, open_report: bool) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Smoke test for aiconnoisseur-api")
-    parser.add_argument("--base-url", default="http://localhost:8000",
-                        help="API base URL (default: http://localhost:8000)")
-    parser.add_argument("--output-dir", default="smoke_test_output",
-                        help="Directory to save JSON and HTML reports (default: smoke_test_output)")
-    parser.add_argument("--wait", action="store_true",
-                        help="Wait for the server to be ready before testing")
-    parser.add_argument("--no-open", action="store_true",
-                        help="Do not open the HTML report in the browser automatically")
+    parser.add_argument(
+        "--base-url",
+        default="http://localhost:8000",
+        help="API base URL (default: http://localhost:8000)",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="smoke_test_output",
+        help="Directory to save JSON and HTML reports (default: smoke_test_output)",
+    )
+    parser.add_argument(
+        "--wait", action="store_true", help="Wait for the server to be ready before testing"
+    )
+    parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Do not open the HTML report in the browser automatically",
+    )
     args = parser.parse_args()
 
-    base       = args.base_url.rstrip("/")
+    base = args.base_url.rstrip("/")
     output_dir = Path(args.output_dir)
 
     if args.wait:

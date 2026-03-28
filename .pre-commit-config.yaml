@@ -1,0 +1,43 @@
+repos:
+  # ── Ruff: Python linter + formatter ───────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^simplydigitals-aiconnoisseur-api/
+      - id: ruff-format
+        files: ^simplydigitals-aiconnoisseur-api/
+
+  # ── General hygiene ───────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  # ── Local: pytest + coverage (API) and Vitest (UI) ────────────────────────
+  - repo: local
+    hooks:
+      - id: api-pytest-coverage
+        name: "API — pytest + coverage (min 70%)"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/python -m pytest'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-api/.*\.py$
+
+      - id: ui-vitest
+        name: "UI — Vitest unit tests"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-ui/.*\.(jsx?|tsx?|js|ts)$

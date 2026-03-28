@@ -32,16 +32,16 @@ function OptionCard({ item, selected, onClick }) {
     <button onClick={onClick}
       className={`w-full text-left p-4 rounded-xl border transition-all duration-200
         ${selected
-          ? 'bg-jade-500/12 border-jade-500/40 shadow-sm'
+          ? 'bg-purple-500/12 border-purple-500/40 shadow-sm'
           : 'bg-ink-800/40 border-ink-700/40 hover:border-ink-600 hover:bg-ink-800/70'
         }`}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className={`font-display font-500 text-sm ${selected ? 'text-jade-300' : 'text-ink-200'}`}>{item.label}</div>
+          <div className={`font-display font-500 text-sm ${selected ? 'text-purple-300' : 'text-ink-200'}`}>{item.label}</div>
           <div className="text-ink-500 text-xs mt-0.5 leading-relaxed">{item.desc}</div>
         </div>
         {selected && (
-          <div className="w-5 h-5 rounded-full bg-jade-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
             <Check className="w-3 h-3 text-ink-950" />
           </div>
         )}
@@ -90,7 +90,7 @@ export default function PreprocessingSection() {
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-up">
       <div>
         <h2 className="font-display text-2xl font-700 text-ink-50">Preprocessing</h2>
-        <p className="text-ink-400 text-sm mt-0.5">Configure how to prepare your data before model training.</p>
+        <p className="text-ink-200 text-sm mt-0.5">Configure how to prepare your data before model training.</p>
       </div>
 
       {/* Step indicator */}
@@ -99,10 +99,10 @@ export default function PreprocessingSection() {
           <div key={s} className="flex items-center flex-1">
             <button onClick={() => setStep(i + 1)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-display font-500
-                ${step === i + 1 ? 'text-jade-400' : i + 1 < step ? 'text-ink-400' : 'text-ink-600'}`}>
+                ${step === i + 1 ? 'text-purple-400' : i + 1 < step ? 'text-ink-400' : 'text-ink-600'}`}>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0
-                ${step === i + 1 ? 'bg-jade-500 text-ink-950' :
-                  i + 1 < step ? 'bg-jade-500/20 text-jade-400' :
+                ${step === i + 1 ? 'bg-purple-500 text-ink-950' :
+                  i + 1 < step ? 'bg-purple-500/20 text-purple-400' :
                   'bg-ink-700 text-ink-500'}`}>
                 {i + 1 < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
               </div>
@@ -201,11 +201,11 @@ export default function PreprocessingSection() {
                     <button key={col} onClick={() => toggleFeature(col)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all
                         ${sel
-                          ? 'bg-jade-500/12 border-jade-500/40 text-jade-300'
-                          : 'bg-ink-800/40 border-ink-700/40 text-ink-400 hover:border-ink-600'
+                          ? 'bg-purple-500/12 border-purple-500/40 text-purple-300'
+                          : 'bg-ink-800/40 border-ink-600 text-ink-200 hover:border-ink-500'
                         }`}>
                       <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0
-                        ${sel ? 'bg-jade-500 border-jade-500' : 'border-ink-600'}`}>
+                        ${sel ? 'bg-purple-500 border-purple-500' : 'border-ink-600'}`}>
                         {sel && <Check className="w-2.5 h-2.5 text-ink-950" />}
                       </div>
                       <span className="truncate">{col}</span>
@@ -235,10 +235,10 @@ export default function PreprocessingSection() {
               { label: 'Imputation', value: IMPUTE_OPTIONS.find((o) => o.value === imputeMethod)?.label, color: 'amber' },
               { label: 'Scaling', value: SCALE_OPTIONS.find((o) => o.value === scaleMethod)?.label, color: 'violet' },
               { label: 'Target Column', value: targetColumn || 'Not set', color: 'rose' },
-              { label: 'Features', value: `${selectedFeatures.length} selected`, color: 'jade' },
+              { label: 'Features', value: `${selectedFeatures.length} selected`, color: 'purple' },
             ].map(({ label, value, color }) => (
               <div key={label} className="flex items-center justify-between py-2 border-b border-ink-800/60 last:border-0">
-                <span className="text-ink-400 text-sm font-display">{label}</span>
+                <span className="text-ink-200 text-sm font-display">{label}</span>
                 <span className={`badge-${color} text-sm`}>{value}</span>
               </div>
             ))}
@@ -246,10 +246,10 @@ export default function PreprocessingSection() {
 
           {selectedFeatures.length > 0 && (
             <div className="card p-5">
-              <div className="text-xs font-display text-ink-500 uppercase tracking-wider mb-3">Selected Features</div>
+              <div className="text-xs font-display text-ink-200 uppercase tracking-wider mb-3">Selected Features</div>
               <div className="flex flex-wrap gap-2">
                 {selectedFeatures.map((f) => (
-                  <span key={f} className="badge-jade">{f}</span>
+                  <span key={f} className="badge-purple">{f}</span>
                 ))}
               </div>
             </div>

@@ -55,24 +55,24 @@ export default function UploadSection() {
       {/* Header */}
       <div>
         <h2 className="font-display text-2xl font-700 text-ink-50">Data Upload</h2>
-        <p className="text-ink-400 text-sm mt-1">Upload a CSV file to begin analysis. Your data is processed securely.</p>
+        <p className="text-ink-200 text-sm mt-1">Upload a CSV file to begin analysis. Your data is processed securely.</p>
       </div>
 
       {/* Drop zone */}
       <div {...getRootProps()} className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300
         ${isDragActive
-          ? 'border-jade-500 bg-jade-500/8 glow-jade'
+          ? 'border-purple-500 bg-purple-500/8 glow-purple'
           : preview
-          ? 'border-jade-500/40 bg-jade-500/5'
+          ? 'border-purple-500/40 bg-purple-500/5'
           : 'border-ink-600/60 bg-ink-900/40 hover:border-ink-500 hover:bg-ink-800/30'
         }`}>
         <input {...getInputProps()} />
 
         {preview ? (
           <div className="animate-fade-in">
-            <CheckCircle2 className="w-12 h-12 text-jade-400 mx-auto mb-3" />
+            <CheckCircle2 className="w-12 h-12 text-purple-400 mx-auto mb-3" />
             <p className="font-display font-600 text-ink-100 text-lg">{preview.file.name}</p>
-            <p className="text-ink-400 text-sm mt-1">
+            <p className="text-ink-200 text-sm mt-1">
               {preview.rows.length.toLocaleString()} rows · {preview.columns.length} columns · {(preview.file.size / 1024).toFixed(1)} KB
             </p>
             <button onClick={(e) => { e.stopPropagation(); setPreview(null) }}
@@ -83,13 +83,13 @@ export default function UploadSection() {
         ) : (
           <>
             <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-all
-              ${isDragActive ? 'bg-jade-500/20 border border-jade-500/40' : 'bg-ink-800 border border-ink-700'}`}>
-              <Upload className={`w-7 h-7 ${isDragActive ? 'text-jade-400' : 'text-ink-400'}`} />
+              ${isDragActive ? 'bg-purple-500/20 border border-purple-500/40' : 'bg-ink-800 border border-ink-700'}`}>
+              <Upload className={`w-7 h-7 ${isDragActive ? 'text-purple-400' : 'text-ink-400'}`} />
             </div>
             <p className="font-display font-600 text-ink-200 text-lg">
               {isDragActive ? 'Drop your CSV here' : 'Drag & drop a CSV file'}
             </p>
-            <p className="text-ink-500 text-sm mt-1">or <span className="text-jade-400 underline underline-offset-2">browse to upload</span></p>
+            <p className="text-ink-500 text-sm mt-1">or <span className="text-purple-400 underline underline-offset-2">browse to upload</span></p>
             <p className="text-ink-600 text-xs mt-3">Supports .csv · up to 500,000 rows</p>
           </>
         )}
@@ -100,21 +100,21 @@ export default function UploadSection() {
         <div className="card p-6 animate-fade-up space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-600 text-ink-100">Column Preview</h3>
-            <span className="badge-jade">{preview.columns.length} columns</span>
+            <span className="badge-purple">{preview.columns.length} columns</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-ink-700/60">
-                  <th className="text-left py-2 px-3 text-ink-400 font-display font-500 text-xs uppercase tracking-wider">Column</th>
-                  <th className="text-left py-2 px-3 text-ink-400 font-display font-500 text-xs uppercase tracking-wider">Sample Values</th>
+                  <th className="text-left py-2 px-3 text-ink-200 font-display font-500 text-xs uppercase tracking-wider">Column</th>
+                  <th className="text-left py-2 px-3 text-ink-200 font-display font-500 text-xs uppercase tracking-wider">Sample Values</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.columns.slice(0, 10).map((col) => (
                   <tr key={col} className="border-b border-ink-800/60 hover:bg-ink-800/30 transition-colors">
-                    <td className="py-2.5 px-3 font-mono text-jade-400 font-500 text-xs">{col}</td>
+                    <td className="py-2.5 px-3 font-mono text-purple-400 font-500 text-xs">{col}</td>
                     <td className="py-2.5 px-3 text-ink-300 text-xs">
                       {preview.rows.slice(0, 3).map((r) => r[col]).filter(Boolean).join(' · ') || '—'}
                     </td>
@@ -149,7 +149,7 @@ export default function UploadSection() {
               <Icon className="w-4.5 h-4.5 text-ink-400" />
             </div>
             <div>
-              <div className="text-xs text-ink-500 font-display">{label}</div>
+              <div className="text-xs text-ink-200 font-display">{label}</div>
               <div className="text-sm text-ink-200 font-mono">{value}</div>
             </div>
           </div>

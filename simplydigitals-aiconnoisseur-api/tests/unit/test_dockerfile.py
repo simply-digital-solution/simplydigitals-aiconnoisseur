@@ -46,6 +46,5 @@ def test_required_files_copied() -> None:
     sources = _copy_sources()
     for required in REQUIRED_COPIES:
         assert any(required in s for s in sources), (
-            f"Dockerfile is missing COPY for '{required}'. "
-            f"Found sources: {sources}"
+            f"Dockerfile is missing COPY for '{required}'. " f"Found sources: {sources}"
         )

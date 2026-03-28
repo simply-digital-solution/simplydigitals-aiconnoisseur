@@ -10,18 +10,16 @@ from __future__ import annotations
 import asyncio
 from logging.config import fileConfig
 
+# ── Import all module models (Alembic must see every mapped class) ─────────────
+import app.modules.auth.models  # noqa: F401
+import app.modules.datasets.models  # noqa: F401
+import app.modules.models.models  # noqa: F401
 from alembic import context
+from app.shared.base import Base
+from app.shared.config import get_settings
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-# ── Import all module models (Alembic must see every mapped class) ─────────────
-import app.modules.auth.models      # noqa: F401
-import app.modules.datasets.models  # noqa: F401
-import app.modules.models.models    # noqa: F401
-
-from app.shared.base import Base
-from app.shared.config import get_settings
 
 # ── Alembic config object ──────────────────────────────────────────────────────
 config = context.config

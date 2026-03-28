@@ -15,8 +15,6 @@ Revises: 003_oauth_fields
 
 from __future__ import annotations
 
-from alembic import op
-
 revision = "004_modular_monolith"
 down_revision = "003_oauth_fields"
 branch_labels = None

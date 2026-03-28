@@ -33,7 +33,9 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     auth_provider: Mapped[AuthProvider] = mapped_column(
-        Enum(AuthProvider), default=AuthProvider.LOCAL, nullable=False
+        Enum(AuthProvider, values_callable=lambda x: [e.value for e in x]),
+        default=AuthProvider.LOCAL,
+        nullable=False,
     )
     oauth_provider_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

@@ -190,8 +190,8 @@ cp .env.example .env   # set SECRET_KEY in .env
 docker-compose up --build
 ```
 
-API available at: `http://localhost:8000`  
-Swagger UI: `http://localhost:8000/docs`  
+API available at: `http://localhost:8000`
+Swagger UI: `http://localhost:8000/docs`
 ReDoc: `http://localhost:8000/redoc`
 
 ---
