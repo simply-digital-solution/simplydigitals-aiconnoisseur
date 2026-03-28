@@ -138,6 +138,27 @@ class TestModelTraining:
         assert resp.status_code in (401, 403)
 
 
+class TestModelGetById:
+    async def test_get_own_model_by_id(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        ds_id = await _upload_dataset(client, auth_headers, "get-ds", _clf_csv())
+        model = await _train_model(client, auth_headers, ds_id)
+        r = await client.get(f"/api/v1/models/{model['id']}", headers=auth_headers)
+        assert r.status_code == 200
+        assert r.json()["id"] == model["id"]
+
+    async def test_get_nonexistent_model_returns_404(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        r = await client.get("/api/v1/models/nonexistent-id", headers=auth_headers)
+        assert r.status_code == 404
+
+    async def test_get_model_requires_auth(self, client: AsyncClient) -> None:
+        r = await client.get("/api/v1/models/any-id")
+        assert r.status_code in (401, 403)
+
+
 class TestModelListing:
     async def test_list_models_empty(
         self, client: AsyncClient, auth_headers: dict

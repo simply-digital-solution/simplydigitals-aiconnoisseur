@@ -70,3 +70,43 @@ class TestRefresh:
         r = await client.post("/api/v1/auth/refresh",
             json={"refresh_token": "not.a.token"})
         assert r.status_code == 401
+
+    async def test_refresh_with_access_token_rejected(self, client: AsyncClient) -> None:
+        await client.post("/api/v1/auth/register",
+            json={"email": "ref2@example.com", "password": _PW, "full_name": "R"})
+        login = await client.post("/api/v1/auth/login",
+            json={"email": "ref2@example.com", "password": _PW})
+        r = await client.post("/api/v1/auth/refresh",
+            json={"refresh_token": login.json()["access_token"]})
+        assert r.status_code == 401
+
+
+class TestRegisterEdgeCases:
+    async def test_missing_full_name_rejected(self, client: AsyncClient) -> None:
+        r = await client.post("/api/v1/auth/register",
+            json={"email": "x@y.com", "password": _PW})
+        assert r.status_code == 422
+
+    async def test_missing_password_rejected(self, client: AsyncClient) -> None:
+        r = await client.post("/api/v1/auth/register",
+            json={"email": "x@y.com", "full_name": "X"})
+        assert r.status_code == 422
+
+    async def test_password_too_long_rejected(self, client: AsyncClient) -> None:
+        r = await client.post("/api/v1/auth/register",
+            json={"email": "long@y.com", "password": "a" * 65, "full_name": "X"})
+        assert r.status_code == 422
+
+    async def test_register_response_has_no_sensitive_fields(self, client: AsyncClient) -> None:
+        r = await client.post("/api/v1/auth/register",
+            json={"email": "safe@example.com", "password": _PW, "full_name": "Safe"})
+        body = r.json()
+        assert "hashed_password" not in body
+        assert "password" not in body
+
+    async def test_login_response_contains_token_type(self, client: AsyncClient) -> None:
+        await client.post("/api/v1/auth/register",
+            json={"email": "ttype@example.com", "password": _PW, "full_name": "T"})
+        r = await client.post("/api/v1/auth/login",
+            json={"email": "ttype@example.com", "password": _PW})
+        assert r.json().get("token_type") == "bearer"

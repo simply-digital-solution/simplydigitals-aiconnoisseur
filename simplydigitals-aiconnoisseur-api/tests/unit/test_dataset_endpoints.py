@@ -94,6 +94,32 @@ class TestDatasetList:
         assert isinstance(response.json(), list)
 
 
+class TestDatasetGetById:
+    async def test_get_own_dataset_by_id(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        upload = await client.post(
+            "/api/v1/datasets/",
+            data={"name": "get-ds"},
+            files={"file": ("data.csv", _csv_bytes(), "text/csv")},
+            headers=auth_headers,
+        )
+        ds_id = upload.json()["id"]
+        r = await client.get(f"/api/v1/datasets/{ds_id}", headers=auth_headers)
+        assert r.status_code == 200
+        assert r.json()["id"] == ds_id
+
+    async def test_get_nonexistent_dataset_returns_404(
+        self, client: AsyncClient, auth_headers: dict
+    ) -> None:
+        r = await client.get("/api/v1/datasets/nonexistent-id", headers=auth_headers)
+        assert r.status_code == 404
+
+    async def test_get_dataset_requires_auth(self, client: AsyncClient) -> None:
+        r = await client.get("/api/v1/datasets/any-id")
+        assert r.status_code in (401, 403)
+
+
 class TestDatasetProfile:
     async def test_profile_returns_stats(
         self, client: AsyncClient, auth_headers: dict
