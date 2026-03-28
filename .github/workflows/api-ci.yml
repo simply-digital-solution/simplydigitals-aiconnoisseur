@@ -101,7 +101,42 @@ jobs:
           path: simplydigitals-aiconnoisseur-api/pytest-report.xml
           retention-days: 7
 
-  # ── 3. VERSION — runs on merge to main ─────────────────────────────────────
+  # ── 3. DOCKER SMOKE TEST — runs on pull request ────────────────────────────
+  docker-smoke-test:
+    name: Docker Build & Smoke Test
+    runs-on: ubuntu-latest
+    if: inputs.run_tests
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg APP_VERSION=smoke-test \
+            -t aiconnoisseur-api:smoke-test \
+            simplydigitals-aiconnoisseur-api
+
+      - name: Verify runtime-critical files exist in image
+        run: |
+          echo "Checking app source..."
+          docker run --rm aiconnoisseur-api:smoke-test \
+            ls app/main.py app/modules/auth/router.py
+
+          echo "Checking alembic config and migrations..."
+          docker run --rm aiconnoisseur-api:smoke-test \
+            ls alembic.ini migrations/env.py migrations/versions/
+
+          echo "Checking migration files are complete..."
+          docker run --rm aiconnoisseur-api:smoke-test \
+            ls migrations/versions/001_initial.py \
+               migrations/versions/002_add_client_ip.py \
+               migrations/versions/003_oauth_fields.py \
+               migrations/versions/004_modular_monolith.py
+
+          echo "All runtime-critical files present"
+
+  # ── 4. VERSION — runs on merge to main ─────────────────────────────────────
   version:
     name: Resolve Version
     runs-on: ubuntu-latest
