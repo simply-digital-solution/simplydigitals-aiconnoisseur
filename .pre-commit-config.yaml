@@ -36,8 +36,8 @@ repos:
         files: ^simplydigitals-aiconnoisseur-api/.*\.py$
 
       - id: ui-vitest
-        name: "UI — Vitest unit tests"
-        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run'
+        name: "UI — Vitest unit tests + coverage"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run --coverage'
         language: system
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-ui/.*\.(jsx?|tsx?|js|ts)$
