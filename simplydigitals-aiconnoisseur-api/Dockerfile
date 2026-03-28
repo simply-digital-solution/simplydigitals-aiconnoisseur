@@ -44,8 +44,10 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 # Copy all pre-built packages
 COPY --from=builder /packages ${LAMBDA_TASK_ROOT}
 
-# Copy application source
+# Copy application source and migrations
 COPY app/ ./app/
+COPY alembic.ini ./
+COPY migrations/ ./migrations/
 
 ARG APP_VERSION=dev
 LABEL org.opencontainers.image.version=${APP_VERSION}
