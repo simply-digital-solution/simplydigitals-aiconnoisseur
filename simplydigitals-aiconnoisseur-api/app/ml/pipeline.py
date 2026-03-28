@@ -27,9 +27,9 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from app.core.config import get_settings
-from app.core.logging import get_logger
-from app.models.models import AlgorithmType
+from app.shared.config import get_settings
+from app.shared.logging import get_logger
+from app.modules.models.models import AlgorithmType
 
 logger = get_logger(__name__)
 settings = get_settings()

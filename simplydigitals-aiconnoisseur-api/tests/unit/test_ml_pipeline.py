@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from app.ml.pipeline import MLPipeline
-from app.models.models import AlgorithmType
+from app.modules.models.models import AlgorithmType
 
 
 def _make_classification_df(n: int = 200) -> pd.DataFrame:

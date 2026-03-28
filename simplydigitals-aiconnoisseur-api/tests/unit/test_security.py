@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import pytest
-from app.core.security import (
+from app.shared.security import (
     create_access_token,
     create_refresh_token,
     decode_token,

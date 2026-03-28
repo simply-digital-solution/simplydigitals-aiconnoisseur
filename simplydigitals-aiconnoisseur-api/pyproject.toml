@@ -152,15 +152,8 @@ omit = [
     "*/migrations/*",
     "*/tests/*",
     "app/main.py",
-    "app/api/*",           # legacy shim — delegates to app/modules/
-    "app/core/*",          # legacy shim — delegates to app/shared/
-    "app/db/*",            # legacy shim — delegates to app/shared/
-    "app/models/*",        # legacy shim — delegates to app/modules/
-    "app/schemas/*",       # legacy shim — delegates to app/modules/
-    "app/services/*",                 # legacy shims — ml_service removed, user_service delegated
-    "app/services/oauth_service.py",  # OAuth — no unit tests (external API)
-    "app/modules/auth/oauth.py",      # OAuth — no unit tests (external API)
-    "app/shared/i18n/*",              # i18n — no unit tests yet
+    "app/modules/auth/oauth.py",  # OAuth — no unit tests (external API)
+    "app/shared/i18n/*",          # i18n — no unit tests yet
 ]
 branch = true
 

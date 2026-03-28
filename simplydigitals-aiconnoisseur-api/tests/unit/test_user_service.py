@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import pytest
-from app.schemas.schemas import UserCreate
-from app.services.user_service import UserService
+from app.modules.auth.schemas import UserCreate
+from app.modules.auth.service import UserService
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 

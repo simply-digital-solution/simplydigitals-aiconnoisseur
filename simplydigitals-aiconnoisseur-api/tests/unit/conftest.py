@@ -5,10 +5,11 @@ import os
 
 import pytest
 import pytest_asyncio
-from app.core.security import create_access_token, hash_password
-from app.db.session import Base, get_db
+from app.shared.security import create_access_token, hash_password
+from app.shared.base import Base
+from app.shared.database import get_db
 from app.main import create_app
-from app.models.models import User
+from app.modules.auth.models import User
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
