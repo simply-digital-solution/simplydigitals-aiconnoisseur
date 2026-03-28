@@ -1,7 +1,13 @@
 import axios from 'axios'
 
+// __API_BASE_URL__ is injected by Vite at build time from VITE_API_BASE_URL env var.
+// In production it becomes the API Gateway origin; in dev it is '' so Vite's proxy handles /api/*.
+const _base = (typeof __API_BASE_URL__ !== 'undefined' && __API_BASE_URL__)
+  ? `${__API_BASE_URL__}/api/v1`
+  : '/api/v1'
+
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: _base,
   timeout: 60000,
 })
 
