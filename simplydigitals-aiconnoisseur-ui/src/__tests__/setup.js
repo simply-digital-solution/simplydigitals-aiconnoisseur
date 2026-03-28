@@ -30,6 +30,7 @@ vi.mock('lucide-react', () => ({
   Eye: () => null,
   EyeOff: () => null,
   Cpu: () => null,
+  LayoutDashboard: () => null,
   Upload: () => null,
   BarChart2: () => null,
   Database: () => null,
