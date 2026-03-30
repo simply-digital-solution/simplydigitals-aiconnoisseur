@@ -16,6 +16,9 @@ vi.mock('../components/layout/Dashboard', () => ({
 vi.mock('../components/showcase/TechShowcasePage', () => ({
   default: () => <div data-testid="showcase">Showcase</div>,
 }))
+vi.mock('../components/landing/LandingPage', () => ({
+  default: () => <div data-testid="landing">Landing</div>,
+}))
 
 import App from '../App'
 import { useStore } from '../store'
@@ -48,13 +51,13 @@ describe('App routing', () => {
 
   it('shows dashboard when user is authenticated', () => {
     useStore.mockImplementation(makeStore('mock-jwt-token'))
-    render(<MemoryRouter initialEntries={['/']}><App /></MemoryRouter>)
+    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
     expect(screen.getByTestId('dashboard')).toBeInTheDocument()
   })
 
   it('fetches user profile on mount when token exists', async () => {
     useStore.mockImplementation(makeStore('mock-jwt-token'))
-    render(<MemoryRouter initialEntries={['/']}><App /></MemoryRouter>)
+    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
     await waitFor(() => expect(authApi.me).toHaveBeenCalledOnce())
     expect(mockSetUser).toHaveBeenCalledWith({ full_name: 'Test User', email: 'test@example.com' })
   })
