@@ -34,9 +34,14 @@ test.describe('UI loads correctly', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('login page is shown to unauthenticated users', async ({ page }) => {
+  test('landing page is shown at root', async ({ page }) => {
     await page.goto(UI_URL)
-    // App should redirect to /login or show the login form
+    // Landing page should load with the company heading
+    await expect(page.getByText(/Simply Digital Solutions/i).first()).toBeVisible({ timeout: 10000 })
+  })
+
+  test('login page is shown at /login', async ({ page }) => {
+    await page.goto(`${UI_URL}/login`)
     await expect(page.getByPlaceholder(/you@example\.com/i)).toBeVisible({ timeout: 10000 })
   })
 
@@ -46,7 +51,7 @@ test.describe('UI loads correctly', () => {
       if (req.url().includes('/api/v1')) apiRequests.push(req.url())
     })
 
-    await page.goto(UI_URL, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${UI_URL}/login`, { waitUntil: 'domcontentloaded' })
 
     // Trigger a login attempt so the app makes an API call
     await page.getByPlaceholder(/you@example\.com/i).fill('probe@example.com')
@@ -72,7 +77,7 @@ test.describe('Registration flow (UI → API Gateway)', () => {
       }
     })
 
-    await page.goto(UI_URL)
+    await page.goto(`${UI_URL}/login`)
     await page.getByText(/register/i).first().click()
 
     await page.getByPlaceholder(/jane smith/i).fill(TEST_NAME)
@@ -98,7 +103,7 @@ test.describe('Registration flow (UI → API Gateway)', () => {
       if (res.url().includes('/api/v1/auth/register')) registrationStatus = res.status()
     })
 
-    await page.goto(UI_URL)
+    await page.goto(`${UI_URL}/login`)
     await page.getByText(/register/i).first().click()
 
     await page.getByPlaceholder(/jane smith/i).fill(TEST_NAME)
@@ -125,7 +130,7 @@ test.describe('Login flow (UI → API Gateway)', () => {
       }
     })
 
-    await page.goto(UI_URL)
+    await page.goto(`${UI_URL}/login`)
     await page.getByPlaceholder(/you@example\.com/i).fill('nobody@example.com')
     await page.locator('input[type="password"]').fill('WrongPass1!')
     await page.locator('button[type="submit"]').click()
