@@ -1,0 +1,106 @@
+name: Weekly Coverage Report
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # Every Monday at 9:00 AM UTC
+  workflow_dispatch:        # Allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Post Coverage Report to Slack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: simplydigitals-aiconnoisseur-ui/package-lock.json
+
+      - name: Install dependencies
+        working-directory: simplydigitals-aiconnoisseur-ui
+        run: npm install
+
+      - name: Run coverage
+        working-directory: simplydigitals-aiconnoisseur-ui
+        run: npx vitest run --coverage --reporter=json --outputFile=/tmp/vitest-results.json 2>/dev/null || true
+
+      - name: Parse coverage and notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          COVERAGE_FILE="simplydigitals-aiconnoisseur-ui/coverage/coverage-summary.json"
+
+          if [ ! -f "$COVERAGE_FILE" ]; then
+            echo "Coverage summary not found — skipping Slack notification"
+            exit 0
+          fi
+
+          LINES=$(jq '.total.lines.pct' "$COVERAGE_FILE")
+          STMTS=$(jq '.total.statements.pct' "$COVERAGE_FILE")
+          FUNCS=$(jq '.total.functions.pct' "$COVERAGE_FILE")
+          BRANCHES=$(jq '.total.branches.pct' "$COVERAGE_FILE")
+
+          # Status emoji based on 70% threshold
+          status_icon() {
+            val=$1
+            threshold=70
+            result=$(echo "$val >= $threshold" | bc -l)
+            [ "$result" -eq 1 ] && echo "✅" || echo "⚠️"
+          }
+
+          L_ICON=$(status_icon $LINES)
+          S_ICON=$(status_icon $STMTS)
+          F_ICON=$(status_icon $FUNCS)
+          B_ICON=$(status_icon $BRANCHES)
+
+          CODECOV_URL="https://app.codecov.io/gh/${REPO}"
+          RUN_URL="https://github.com/${REPO}/actions/runs/${RUN_ID}"
+
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": { \"type\": \"plain_text\", \"text\": \"📊 Weekly UI Code Coverage Report\" }
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    { \"type\": \"mrkdwn\", \"text\": \"${L_ICON} *Lines*\n${LINES}%\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"${S_ICON} *Statements*\n${STMTS}%\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"${F_ICON} *Functions*\n${FUNCS}%\" },
+                    { \"type\": \"mrkdwn\", \"text\": \"${B_ICON} *Branches*\n${BRANCHES}%\" }
+                  ]
+                },
+                {
+                  \"type\": \"section\",
+                  \"text\": { \"type\": \"mrkdwn\", \"text\": \"_Threshold: 70% across all metrics_\" }
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": { \"type\": \"plain_text\", \"text\": \"View Trend on Codecov\" },
+                      \"url\": \"${CODECOV_URL}\"
+                    },
+                    {
+                      \"type\": \"button\",
+                      \"text\": { \"type\": \"plain_text\", \"text\": \"View Run\" },
+                      \"url\": \"${RUN_URL}\"
+                    }
+                  ]
+                }
+              ]
+            }"
+          echo "Slack notification sent"

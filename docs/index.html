@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simply Digital Solutions — AI-Native Engineering</title>
+  <meta name="description" content="Simply Digital Solutions builds production-ready, cloud-native AI platforms that turn data into decisions." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%239333ea'/><text y='.9em' font-size='62' x='50%' dominant-baseline='middle' text-anchor='middle' dy='0.1em'>🧠</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink-950: #07080f;
+      --ink-900: #0d0f1a;
+      --ink-800: #151826;
+      --ink-700: #1e2235;
+      --ink-500: #4a5270;
+      --ink-300: #8892b0;
+      --ink-100: #ccd6f6;
+      --ink-50:  #e8edf8;
+      --purple-600: #9333ea;
+      --purple-500: #a855f7;
+      --purple-400: #c084fc;
+      --purple-300: #d8b4fe;
+      --amber-400: #fbbf24;
+      --cyan-400:  #22d3ee;
+      --green-400: #4ade80;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--ink-950);
+      color: var(--ink-100);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise + grid overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(147,51,234,0.12) 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      backdrop-filter: blur(16px);
+      background: rgba(7,8,15,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--ink-50);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--purple-400); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--ink-300);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--ink-50); }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      border-radius: 0.5rem;
+      background: var(--purple-600);
+      color: #fff !important;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .nav-cta:hover { background: var(--purple-500); transform: translateY(-1px); }
+
+    /* ── SECTIONS ── */
+    section {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding-top: 8rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 1rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(168,85,247,0.3);
+      background: rgba(168,85,247,0.08);
+      color: var(--purple-300);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--purple-400);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--ink-50);
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    h1 .gradient {
+      background: linear-gradient(135deg, var(--purple-400) 0%, var(--cyan-400) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      max-width: 640px;
+      font-size: 1.125rem;
+      color: var(--ink-300);
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 0.625rem;
+      background: var(--purple-600);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 24px rgba(147,51,234,0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--purple-500);
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px rgba(147,51,234,0.5);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 0.625rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--ink-100);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(168,85,247,0.4);
+      background: rgba(168,85,247,0.08);
+      transform: translateY(-2px);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .stat { text-align: center; }
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--ink-50);
+      line-height: 1;
+    }
+    .stat-value span { color: var(--purple-400); }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--ink-500);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 0.25rem;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple-400);
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--ink-50);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 1.0625rem;
+      color: var(--ink-300);
+      max-width: 560px;
+      margin-bottom: 3.5rem;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: rgba(21,24,38,0.7);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1rem;
+      padding: 2rem;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(168,85,247,0.25);
+      transform: translateY(-3px);
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+
+    .about-card { display: flex; flex-direction: column; gap: 1rem; }
+
+    .about-icon {
+      width: 2.75rem; height: 2.75rem;
+      border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .icon-purple { background: rgba(168,85,247,0.12); }
+    .icon-cyan   { background: rgba(34,211,238,0.10); }
+    .icon-amber  { background: rgba(251,191,36,0.10); }
+    .icon-green  { background: rgba(74,222,128,0.10); }
+
+    .about-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--ink-50);
+    }
+
+    .about-card p { font-size: 0.9375rem; color: var(--ink-300); }
+
+    /* ── VISION / MISSION ── */
+    .vm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 700px) { .vm-grid { grid-template-columns: 1fr; } }
+
+    .vm-card {
+      padding: 2.5rem;
+      border-radius: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .vm-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(168,85,247,0.4), rgba(34,211,238,0.15));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .vm-card.vision { background: linear-gradient(135deg, rgba(147,51,234,0.08), rgba(21,24,38,0.9)); }
+    .vm-card.mission { background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(21,24,38,0.9)); }
+
+    .vm-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .vision .vm-label { color: var(--purple-400); }
+    .mission .vm-label { color: var(--cyan-400); }
+
+    .vm-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: var(--ink-50);
+      line-height: 1.3;
+      margin-bottom: 1rem;
+    }
+
+    .vm-card p { color: var(--ink-300); font-size: 0.9375rem; }
+
+    /* ── DIFFERENTIATORS ── */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 900px) { .diff-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .diff-grid { grid-template-columns: 1fr; } }
+
+    .diff-card { padding: 1.75rem; }
+
+    .diff-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--purple-400), var(--cyan-400));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .diff-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink-50);
+      margin-bottom: 0.5rem;
+    }
+
+    .diff-card p { font-size: 0.875rem; color: var(--ink-300); }
+
+    /* ── TECH STACK ── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 700px) { .tech-grid { grid-template-columns: 1fr; } }
+
+    .tech-card { padding: 1.75rem 2rem; }
+
+    .tech-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tech-icon {
+      width: 2.5rem; height: 2.5rem;
+      border-radius: 0.5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .tech-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink-50);
+    }
+
+    .tech-card .sub { font-size: 0.75rem; color: var(--ink-500); }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .tag-purple { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25); color: var(--purple-300); }
+    .tag-cyan   { background: rgba(34,211,238,0.06); border-color: rgba(34,211,238,0.2);  color: var(--cyan-400); }
+    .tag-amber  { background: rgba(251,191,36,0.07); border-color: rgba(251,191,36,0.2);  color: var(--amber-400); }
+    .tag-green  { background: rgba(74,222,128,0.07); border-color: rgba(74,222,128,0.2);  color: var(--green-400); }
+
+    /* ── CI/CD PIPELINE BADGE ── */
+    .pipeline-strip {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-top: 2.5rem;
+      background: rgba(21,24,38,0.6);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .pipe-step {
+      flex: 1;
+      min-width: 100px;
+      padding: 1rem;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .pipe-step:last-child { border-right: none; }
+
+    .pipe-step-icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
+    .pipe-step-label { font-size: 0.7rem; font-weight: 600; color: var(--ink-300); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* ── CTA SECTION ── */
+    #cta {
+      text-align: center;
+      padding-top: 4rem;
+      padding-bottom: 8rem;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(34,211,238,0.05));
+      border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 1.5rem;
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::after {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-box h2 { margin-bottom: 1rem; }
+    .cta-box p { color: var(--ink-300); max-width: 480px; margin: 0 auto 2.5rem; }
+    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--ink-50);
+      text-decoration: none;
+    }
+
+    .footer-logo span { color: var(--purple-400); }
+
+    footer p { font-size: 0.8rem; color: var(--ink-500); }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.8rem;
+      color: var(--ink-500);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--purple-400); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(168,85,247,0.3), transparent);
+      margin: 0 auto;
+      max-width: 1100px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE NAV ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      nav { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#hero" class="nav-logo">Simply<span>Digital</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#differentiators">Why Us</a></li>
+      <li><a href="#tech">Tech</a></li>
+      <li><a href="https://www.simplydigitals.com.sg" target="_blank" class="nav-cta">Launch App ↗</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-badge">AI-Native Engineering · Singapore</div>
+    <h1>
+      Engineering Intelligence<br/>
+      <span class="gradient">Into Every Layer</span>
+    </h1>
+    <p class="hero-sub">
+      Simply Digital Solutions builds production-ready, cloud-native AI platforms that turn raw data into strategic decisions — shipped fast, built to last.
+    </p>
+    <div class="hero-actions">
+      <a href="https://www.simplydigitals.com.sg" target="_blank" class="btn-primary">
+        ⚡ View Live Platform
+      </a>
+      <a href="https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur" target="_blank" class="btn-secondary">
+        ⭐ GitHub Repository
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-value">100<span>%</span></div>
+        <div class="stat-label">Cloud Native</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">70<span>%+</span></div>
+        <div class="stat-label">Test Coverage</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">0<span>ms</span></div>
+        <div class="stat-label">Downtime Deploys</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">AI<span>↗</span></div>
+        <div class="stat-label">First Engineering</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="reveal">
+      <span class="section-label">Who We Are</span>
+      <h2>Built on Precision.<br/>Driven by Intelligence.</h2>
+      <p class="section-sub">
+        We are a Singapore-based technology company specialising in AI-powered analytics platforms, cloud infrastructure, and AI-native software engineering practices.
+      </p>
+    </div>
+    <div class="about-grid reveal">
+      <div class="card about-card">
+        <div class="about-icon icon-purple">🧠</div>
+        <h3>AI-Native Development</h3>
+        <p>Every product we build is engineered from the ground up with AI at its core — not bolted on. From architecture decisions to deployment pipelines, intelligence is embedded at every layer.</p>
+      </div>
+      <div class="card about-card">
+        <div class="about-icon icon-cyan">☁️</div>
+        <h3>Cloud-First Infrastructure</h3>
+        <p>Our platforms run on AWS with serverless compute, private VPC databases, and CDN-accelerated frontends — designed for scale, resilience, and cost efficiency from day one.</p>
+      </div>
+      <div class="card about-card">
+        <div class="about-icon icon-amber">🔬</div>
+        <h3>ML Analytics at Scale</h3>
+        <p>AIConnoisseur — our flagship product — delivers end-to-end ML analytics: data ingestion, preprocessing, A/B testing, visualisation, and model evaluation in a single unified platform.</p>
+      </div>
+      <div class="card about-card">
+        <div class="about-icon icon-green">🛡️</div>
+        <h3>Production-Grade Quality</h3>
+        <p>We enforce automated testing, coverage thresholds, linting, and security scanning at commit time — not as an afterthought. Every release is audit-ready and stakeholder-reportable.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- VISION & MISSION -->
+  <section id="vision">
+    <div class="reveal">
+      <span class="section-label">Purpose</span>
+      <h2>Vision &amp; Mission</h2>
+      <p class="section-sub">The principles that guide every line of code we ship.</p>
+    </div>
+    <div class="vm-grid reveal">
+      <div class="vm-card vision">
+        <div class="vm-label">Vision</div>
+        <h3>A world where every business decision is powered by real intelligence.</h3>
+        <p>We envision a future where AI is not a privilege of large enterprises — but an accessible, production-grade capability for every organisation that needs to compete on data. Simply Digital Solutions exists to build the bridge between cutting-edge AI research and practical, deployable business value.</p>
+      </div>
+      <div class="vm-card mission">
+        <div class="vm-label">Mission</div>
+        <h3>To engineer AI platforms that are fast to deploy, trusted in production, and built to scale.</h3>
+        <p>Our mission is to deliver cloud-native AI solutions with the engineering rigour of a world-class software team — automated quality gates, zero-downtime deployments, transparent observability, and stakeholder-ready reporting — so our clients can move fast without breaking things.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- DIFFERENTIATORS -->
+  <section id="differentiators">
+    <div class="reveal">
+      <span class="section-label">Why Simply Digital</span>
+      <h2>What Sets Us Apart</h2>
+      <p class="section-sub">Six reasons engineering teams and businesses choose us over the alternatives.</p>
+    </div>
+    <div class="diff-grid reveal">
+      <div class="card diff-card">
+        <div class="diff-number">01</div>
+        <h3>AI-Prompted Engineering</h3>
+        <p>We leverage Claude Code and AI-assisted development to deliver production-ready platforms at a fraction of traditional timelines — without sacrificing quality or security.</p>
+      </div>
+      <div class="card diff-card">
+        <div class="diff-number">02</div>
+        <h3>End-to-End Ownership</h3>
+        <p>From VPC networking and database migrations to React UI animations and CloudFront routing — we own the full stack. No handoffs. No integration gaps.</p>
+      </div>
+      <div class="card diff-card">
+        <div class="diff-number">03</div>
+        <h3>Quality Enforced at Source</h3>
+        <p>Pre-commit hooks, 70% test coverage thresholds, Codecov trend tracking, and weekly Slack reports mean quality is measured — not assumed.</p>
+      </div>
+      <div class="card diff-card">
+        <div class="diff-number">04</div>
+        <h3>Serverless by Default</h3>
+        <p>AWS Lambda + API Gateway means zero server management, automatic scaling, and pay-per-request pricing — right-sized infrastructure from day one.</p>
+      </div>
+      <div class="card diff-card">
+        <div class="diff-number">05</div>
+        <h3>Infrastructure as Code</h3>
+        <p>Every AWS resource is version-controlled and reproducible. Staging environments, disaster recovery, and audit trails are built into the process — not retrofitted.</p>
+      </div>
+      <div class="card diff-card">
+        <div class="diff-number">06</div>
+        <h3>Stakeholder Transparency</h3>
+        <p>Automated coverage reports to Slack, Codecov trend graphs, and deployment summaries keep management informed without anyone manually pulling data.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TECHNICAL SUPERIORITY -->
+  <section id="tech">
+    <div class="reveal">
+      <span class="section-label">Technical Superiority</span>
+      <h2>State-of-the-Art.<br/>Every Layer.</h2>
+      <p class="section-sub">Our stack is not a collection of trendy tools — it is a deliberate architecture chosen for production reliability, developer velocity, and long-term maintainability.</p>
+    </div>
+    <div class="tech-grid reveal">
+      <div class="card tech-card">
+        <div class="tech-card-header">
+          <div class="tech-icon icon-purple">🎨</div>
+          <div>
+            <h3>Frontend</h3>
+            <div class="sub">React · Vite · Tailwind CSS</div>
+          </div>
+        </div>
+        <div class="tag-list">
+          <span class="tag tag-purple">React 18</span>
+          <span class="tag tag-purple">Vite 5</span>
+          <span class="tag tag-purple">Tailwind CSS</span>
+          <span class="tag tag-purple">React Router</span>
+          <span class="tag tag-purple">Zustand</span>
+          <span class="tag tag-purple">Vitest</span>
+        </div>
+      </div>
+      <div class="card tech-card">
+        <div class="tech-card-header">
+          <div class="tech-icon icon-cyan">🐍</div>
+          <div>
+            <h3>Backend</h3>
+            <div class="sub">Python · FastAPI · Lambda</div>
+          </div>
+        </div>
+        <div class="tag-list">
+          <span class="tag tag-cyan">FastAPI</span>
+          <span class="tag tag-cyan">Python 3.12</span>
+          <span class="tag tag-cyan">Pydantic v2</span>
+          <span class="tag tag-cyan">SQLAlchemy</span>
+          <span class="tag tag-cyan">Alembic</span>
+          <span class="tag tag-cyan">Pytest</span>
+        </div>
+      </div>
+      <div class="card tech-card">
+        <div class="tech-card-header">
+          <div class="tech-icon icon-amber">☁️</div>
+          <div>
+            <h3>Infrastructure</h3>
+            <div class="sub">AWS · Serverless · VPC</div>
+          </div>
+        </div>
+        <div class="tag-list">
+          <span class="tag tag-amber">AWS Lambda</span>
+          <span class="tag tag-amber">API Gateway</span>
+          <span class="tag tag-amber">S3 + CloudFront</span>
+          <span class="tag tag-amber">RDS PostgreSQL</span>
+          <span class="tag tag-amber">Private VPC</span>
+          <span class="tag tag-amber">IAM OIDC</span>
+        </div>
+      </div>
+      <div class="card tech-card">
+        <div class="tech-card-header">
+          <div class="tech-icon icon-green">⚙️</div>
+          <div>
+            <h3>CI / CD &amp; Quality</h3>
+            <div class="sub">GitHub Actions · Codecov · Slack</div>
+          </div>
+        </div>
+        <div class="tag-list">
+          <span class="tag tag-green">GitHub Actions</span>
+          <span class="tag tag-green">Pre-commit Hooks</span>
+          <span class="tag tag-green">Codecov</span>
+          <span class="tag tag-green">Ruff</span>
+          <span class="tag tag-green">ESLint 9</span>
+          <span class="tag tag-green">Docker</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pipeline strip -->
+    <div class="pipeline-strip reveal">
+      <div class="pipe-step">
+        <div class="pipe-step-icon">🔀</div>
+        <div class="pipe-step-label">Git Push</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">🔍</div>
+        <div class="pipe-step-label">Lint</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">🧪</div>
+        <div class="pipe-step-label">Tests</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">📊</div>
+        <div class="pipe-step-label">Coverage</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">🐳</div>
+        <div class="pipe-step-label">Build</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">🚀</div>
+        <div class="pipe-step-label">Deploy</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-step-icon">✅</div>
+        <div class="pipe-step-label">Post-Deploy</div>
+      </div>
+    </div>
+
+    <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--ink-500);">
+      Explore the full animated pipeline →
+      <a href="https://www.simplydigitals.com.sg/showcase" target="_blank" style="color:var(--purple-400); text-decoration:none;">simplydigitals.com.sg/showcase</a>
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-box reveal">
+      <h2>Ready to See It Live?</h2>
+      <p>Explore the platform, walk through the technical architecture, or dive into the source code on GitHub.</p>
+      <div class="cta-actions">
+        <a href="https://www.simplydigitals.com.sg" target="_blank" class="btn-primary">
+          ⚡ Launch AIConnoisseur
+        </a>
+        <a href="https://www.simplydigitals.com.sg/showcase" target="_blank" class="btn-secondary">
+          🏗️ Tech Architecture
+        </a>
+        <a href="https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur" target="_blank" class="btn-secondary">
+          ⭐ View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#hero" class="footer-logo">Simply<span>Digital</span> Solutions</a>
+    <p>© 2026 Simply Digital Solutions · Singapore</p>
+    <ul class="footer-links">
+      <li><a href="https://www.simplydigitals.com.sg" target="_blank">Product</a></li>
+      <li><a href="https://www.simplydigitals.com.sg/showcase" target="_blank">Architecture</a></li>
+      <li><a href="https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur" target="_blank">GitHub</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible')
+          observer.unobserve(e.target)
+        }
+      })
+    }, { threshold: 0.12 })
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+  </script>
+</body>
+</html>
