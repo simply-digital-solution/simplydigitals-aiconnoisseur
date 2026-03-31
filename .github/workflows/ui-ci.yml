@@ -75,6 +75,9 @@ jobs:
 
       - run: npm install
 
+      - name: npm audit CVE scan
+        run: npm audit --audit-level=high
+
       - name: Run Vitest with coverage
         run: npm run test:coverage
 

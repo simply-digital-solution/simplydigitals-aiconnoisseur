@@ -101,7 +101,56 @@ jobs:
           path: simplydigitals-aiconnoisseur-api/pytest-report.xml
           retention-days: 7
 
-  # ── 3. VERSION — runs on merge to main ─────────────────────────────────────
+  # ── 3. SECURITY — runs on pull request ────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: inputs.run_tests
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: simplydigitals-aiconnoisseur-api/pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Bandit SAST
+        run: |
+          bandit -r app -ll -f json -o bandit-report.json || true
+          bandit -r app -ll
+
+      - name: pip-audit CVE scan
+        run: |
+          pip-audit --desc \
+            --ignore-vuln CVE-2024-23342 \
+            --ignore-vuln GHSA-rf74-v2fm-23pw \
+            --ignore-vuln CVE-2026-33230 \
+            --ignore-vuln CVE-2026-33231 \
+            --ignore-vuln CVE-2026-4539
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: simplydigitals-aiconnoisseur-api
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+          format: table
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-bandit-report-${{ github.run_id }}
+          path: simplydigitals-aiconnoisseur-api/bandit-report.json
+          retention-days: 7
+
+  # ── 4. VERSION — runs on merge to main ─────────────────────────────────────
   version:
     name: Resolve Version
     runs-on: ubuntu-latest
