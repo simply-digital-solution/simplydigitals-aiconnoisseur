@@ -3,36 +3,46 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
+const mockNavigate = vi.fn()
+const mockSetToken = vi.fn()
+
 vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn(), loading: vi.fn() },
 }))
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
-  return { ...actual, useNavigate: () => vi.fn() }
+  return { ...actual, useNavigate: () => mockNavigate }
 })
 
 vi.mock('../store', () => ({
   useStore: vi.fn((selector) => {
-    const state = { setToken: vi.fn(), token: null, clearAuth: vi.fn() }
+    const state = { setToken: mockSetToken, token: null, clearAuth: vi.fn() }
     return typeof selector === 'function' ? selector(state) : state
   }),
 }))
 
 vi.mock('../utils/api', () => ({
-  authApi: { login: vi.fn(), register: vi.fn() },
+  authApi: { login: vi.fn(), register: vi.fn(), googleLogin: vi.fn() },
 }))
 
-vi.mock('../hooks/useOAuth', () => ({
-  useOAuth: () => ({
-    loginWithGoogle: vi.fn(),
-    loginWithFacebook: vi.fn(),
-    loadingProvider: null,
-  }),
+vi.mock('@react-oauth/google', () => ({
+  GoogleOAuthProvider: ({ children }) => children,
+  GoogleLogin: ({ onSuccess, onError }) => (
+    <>
+      <button data-testid="google-login-btn" onClick={() => onSuccess({ credential: 'mock-google-token' })}>
+        Sign in with Google
+      </button>
+      <button data-testid="google-error-btn" onClick={() => onError()}>
+        Google Error
+      </button>
+    </>
+  ),
 }))
 
 import LoginPage from '../components/layout/LoginPage'
 import { authApi } from '../utils/api'
+import toast from 'react-hot-toast'
 
 function renderLogin() {
   return render(<MemoryRouter><LoginPage /></MemoryRouter>)
@@ -107,5 +117,69 @@ describe('LoginPage', () => {
         password: 'pass1234',
       })
     }, { timeout: 3000 })
+  })
+
+  // ── Google Sign-In ──────────────────────────────────────────────────────────
+
+  it('renders the "or sign in with email" divider', () => {
+    renderLogin()
+    expect(screen.getByText(/or sign in with email/i)).toBeInTheDocument()
+  })
+
+  it('renders the Google Sign-In button', () => {
+    renderLogin()
+    expect(screen.getByTestId('google-login-btn')).toBeInTheDocument()
+  })
+
+  it('calls googleLogin API with the credential on Google success', async () => {
+    authApi.googleLogin.mockResolvedValue({ data: { access_token: 'google-tok' } })
+    renderLogin()
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('google-login-btn'))
+    })
+
+    await waitFor(() => {
+      expect(authApi.googleLogin).toHaveBeenCalledWith('mock-google-token')
+    })
+  })
+
+  it('stores token and navigates to / on successful Google login', async () => {
+    authApi.googleLogin.mockResolvedValue({ data: { access_token: 'google-tok' } })
+    renderLogin()
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('google-login-btn'))
+    })
+
+    await waitFor(() => {
+      expect(mockSetToken).toHaveBeenCalledWith('google-tok')
+      expect(mockNavigate).toHaveBeenCalledWith('/')
+    })
+  })
+
+  it('shows error toast when googleLogin API call fails', async () => {
+    authApi.googleLogin.mockRejectedValue({
+      response: { data: { detail: 'Google token invalid' } },
+    })
+    renderLogin()
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('google-login-btn'))
+    })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Google token invalid')
+    })
+  })
+
+  it('shows fallback error toast when Google button reports an error', async () => {
+    renderLogin()
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId('google-error-btn'))
+    })
+
+    expect(toast.error).toHaveBeenCalledWith('Google sign-in failed')
   })
 })

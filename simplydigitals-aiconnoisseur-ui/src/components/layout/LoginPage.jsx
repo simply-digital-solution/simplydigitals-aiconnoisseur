@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Cpu, LayoutDashboard } from 'lucide-react'
+import { Eye, EyeOff, Cpu } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { GoogleLogin } from '@react-oauth/google'
 import { authApi } from '../../utils/api'
 import { useStore } from '../../store'
 
@@ -14,6 +15,20 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '', full_name: '' })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function handleGoogleSuccess(credentialResponse) {
+    setLoading(true)
+    try {
+      const { data } = await authApi.googleLogin(credentialResponse.credential)
+      setToken(data.access_token)
+      toast.success('Welcome!')
+      navigate('/')
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Google sign-in failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function submit(e) {
     e.preventDefault()
@@ -58,12 +73,24 @@ export default function LoginPage() {
         </div>
 
         <div className="card p-8">
-          {/* Tech Architecture link */}
-          <button onClick={() => window.open('/showcase', '_blank')}
-            className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/15 text-purple-300 text-sm font-display font-500 transition-all duration-200 mb-6">
-            <LayoutDashboard className="w-4 h-4" />
-            View Tech Architecture
-          </button>
+          {/* Google Sign-In */}
+          <div className="flex justify-center mb-5">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => toast.error('Google sign-in failed')}
+              theme="filled_black"
+              size="large"
+              shape="rectangular"
+              width="368"
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-ink-700" />
+            <span className="text-ink-500 text-xs font-body">or sign in with email</span>
+            <div className="flex-1 h-px bg-ink-700" />
+          </div>
 
           {/* Mode toggle */}
           <div className="flex gap-1 p-1 bg-ink-800 rounded-xl mb-8">
@@ -108,6 +135,7 @@ export default function LoginPage() {
               ) : mode === 'login' ? 'Sign in' : 'Create account'}
             </button>
           </form>
+
         </div>
 
         <p className="text-center text-ink-600 text-xs mt-6">
