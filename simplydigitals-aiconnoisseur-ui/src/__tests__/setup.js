@@ -16,6 +16,12 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 })
 
+// Mock @react-oauth/google
+vi.mock('@react-oauth/google', () => ({
+  GoogleOAuthProvider: ({ children }) => children,
+  GoogleLogin: () => null,
+}))
+
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
   default: {

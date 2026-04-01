@@ -20,7 +20,7 @@ vi.mock('../store', () => ({
 }))
 
 vi.mock('../utils/api', () => ({
-  authApi: { login: vi.fn(), register: vi.fn() },
+  authApi: { login: vi.fn(), register: vi.fn(), googleLogin: vi.fn() },
 }))
 
 vi.mock('../hooks/useOAuth', () => ({

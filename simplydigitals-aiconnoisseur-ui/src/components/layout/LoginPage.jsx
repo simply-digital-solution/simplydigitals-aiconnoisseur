@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Cpu, LayoutDashboard } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { GoogleLogin } from '@react-oauth/google'
 import { authApi } from '../../utils/api'
 import { useStore } from '../../store'
 
@@ -14,6 +15,20 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '', full_name: '' })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function handleGoogleSuccess(credentialResponse) {
+    setLoading(true)
+    try {
+      const { data } = await authApi.googleLogin(credentialResponse.credential)
+      setToken(data.access_token)
+      toast.success('Welcome!')
+      navigate('/')
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Google sign-in failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function submit(e) {
     e.preventDefault()
@@ -108,6 +123,25 @@ export default function LoginPage() {
               ) : mode === 'login' ? 'Sign in' : 'Create account'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-ink-700" />
+            <span className="text-ink-500 text-xs font-body">or continue with</span>
+            <div className="flex-1 h-px bg-ink-700" />
+          </div>
+
+          {/* Google Sign-In */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => toast.error('Google sign-in failed')}
+              theme="filled_black"
+              size="large"
+              shape="rectangular"
+              width="368"
+            />
+          </div>
         </div>
 
         <p className="text-center text-ink-600 text-xs mt-6">
