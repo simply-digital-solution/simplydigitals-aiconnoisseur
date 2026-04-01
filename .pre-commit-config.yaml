@@ -57,7 +57,7 @@ repos:
 
       - id: api-pip-audit
         name: "API — pip-audit CVE scan"
-        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/pip-audit --desc --skip-editable
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/pip freeze --exclude-editable | .venv/bin/pip-audit -r /dev/stdin --desc
           --ignore-vuln CVE-2024-23342
           --ignore-vuln GHSA-rf74-v2fm-23pw
           --ignore-vuln CVE-2026-33230
