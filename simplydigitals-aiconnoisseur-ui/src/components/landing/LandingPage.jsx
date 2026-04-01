@@ -352,7 +352,7 @@ export default function LandingPage() {
         <p className="text-xs text-ink-500">© 2026 Simply Digital Solutions · Singapore</p>
         <div className="flex gap-6">
           {[
-            ['https://www.simplydigitals.com.sg', 'Product'],
+            ['/login', 'Product', true],
             ['/showcase', 'Architecture', true],
             ['https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur', 'GitHub'],
           ].map(([href, label, internal]) =>

@@ -39,11 +39,49 @@ describe('LandingPage', () => {
     expect(link).toHaveAttribute('href', '/login')
   })
 
-  it('renders the "Tech Architecture" link pointing to /showcase', () => {
+  it('renders the footer "Product" link pointing to /login', () => {
+    renderLanding()
+    const link = screen.getByRole('link', { name: /^Product$/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/login')
+  })
+
+  it('renders all "Tech Architecture" links pointing to /showcase', () => {
     renderLanding()
     const links = screen.getAllByRole('link', { name: /Tech Architecture/i })
     expect(links.length).toBeGreaterThan(0)
-    expect(links[0]).toHaveAttribute('href', '/showcase')
+    links.forEach(link => expect(link).toHaveAttribute('href', '/showcase'))
+  })
+
+  it('renders the tech section "View Architecture" link pointing to /showcase', () => {
+    renderLanding()
+    const link = screen.getByRole('link', { name: /View Architecture/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/showcase')
+  })
+
+  it('renders the footer "Architecture" link pointing to /showcase', () => {
+    renderLanding()
+    const link = screen.getByRole('link', { name: /^Architecture$/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/showcase')
+  })
+
+  it('renders GitHub links pointing to the correct external repo', () => {
+    renderLanding()
+    const links = screen.getAllByRole('link', { name: /github/i })
+    expect(links.length).toBeGreaterThan(0)
+    links.forEach(link =>
+      expect(link).toHaveAttribute('href', 'https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur')
+    )
+  })
+
+  it('renders nav anchor links for page sections', () => {
+    renderLanding()
+    expect(screen.getByRole('link', { name: /^About$/i })).toHaveAttribute('href', '#about')
+    expect(screen.getByRole('link', { name: /^Vision$/i })).toHaveAttribute('href', '#vision')
+    expect(screen.getByRole('link', { name: /^Why Us$/i })).toHaveAttribute('href', '#differentiators')
+    expect(screen.getByRole('link', { name: /^Tech$/i })).toHaveAttribute('href', '#tech')
   })
 
   it('renders the About section', () => {
