@@ -153,9 +153,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <a href="https://www.simplydigitals.com.sg" target="_blank" rel="noreferrer" className="btn-primary">
+            <Link to="/login" className="btn-primary">
               ⚡ View Live Platform
-            </a>
+            </Link>
             <Link to="/showcase"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-ink-600 bg-ink-800/50 text-ink-100 font-display font-600 text-base transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/8">
               🏗️ Tech Architecture

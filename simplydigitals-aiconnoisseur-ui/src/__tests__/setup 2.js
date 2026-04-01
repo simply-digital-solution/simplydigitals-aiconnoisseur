@@ -1,13 +1,6 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
-// Mock IntersectionObserver — not available in jsdom
-global.IntersectionObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
 // Mock localStorage globally — Zustand store reads it on module init
 const _storage = {}
 const localStorageMock = {
@@ -23,12 +16,6 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 })
 
-// Mock @react-oauth/google
-vi.mock('@react-oauth/google', () => ({
-  GoogleOAuthProvider: ({ children }) => children,
-  GoogleLogin: () => null,
-}))
-
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
   default: {
@@ -43,7 +30,6 @@ vi.mock('lucide-react', () => ({
   Eye: () => null,
   EyeOff: () => null,
   Cpu: () => null,
-  LayoutDashboard: () => null,
   Upload: () => null,
   BarChart2: () => null,
   Database: () => null,
