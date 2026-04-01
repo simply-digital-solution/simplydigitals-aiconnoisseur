@@ -16,8 +16,8 @@ const HERO_STATS = [
   { to: 10,  suffix: 'min', label: 'Deploy Lead Time',    sub: 'DORA Elite · commit → live in production',       color: 'violet' },
   { to: 100, suffix: '%',   label: 'Release Automation',  sub: 'zero human steps from merge to production',      color: 'amber'  },
   { to: 6,   suffix: '',    label: 'Live Production E2E', sub: 'Playwright Chromium · real endpoints · no mocks', color: 'rose'   },
-  { to: 12,  suffix: '+',   label: 'Security Controls',   sub: 'OWASP · JWT · bcrypt · rate-limit · TLS',        color: 'purple' },
-  { to: 3,   suffix: '',    label: 'Quality Gate Layers', sub: 'pre-commit · CI test suite · post-deploy E2E',   color: 'violet' },
+  { to: 17,  suffix: '+',   label: 'Security Controls',   sub: 'OWASP · JWT · bcrypt · gitleaks · trivy · SAST',              color: 'purple' },
+  { to: 5,   suffix: '',    label: 'Quality Gate Layers', sub: 'pre-commit · CVE scan · SAST · CI test suite · post-deploy E2E', color: 'violet' },
 ]
 
 const DORA_METRICS = [
@@ -68,10 +68,15 @@ const SECURITY_CHECKS = [
   'SQLAlchemy ORM — no raw SQL injection surface',
   'CORS policy enforced at middleware',
   'MIME type validation on file uploads',
-  'Secret scanning on every commit (pre-commit)',
+  'Gitleaks — secret & token scanning on every commit',
+  'Bandit SAST — Python code security analysis (pre-commit + CI)',
+  'pip-audit — Python CVE dependency scan',
+  'npm audit — JS CVE dependency scan (HIGH+ threshold)',
+  'Trivy — filesystem & container CVE scan in CI (HIGH/CRITICAL)',
   'Zero secrets in source — GitHub Secrets → Lambda env',
   'Multi-tenant row-level data isolation',
   'HTTPS only — CloudFront TLS termination',
+  '3 transitive CVEs patched (cryptography · ecdsa · requests)',
 ]
 
 const TECH_DECISIONS = [
@@ -114,7 +119,7 @@ const TECH_DECISIONS = [
 ]
 
 const QUALITY_GATES = [
-  { label: 'Pre-commit',   desc: 'Ruff lint + format\nVitest unit\npytest + 70% cov',  icon: Terminal, color: 'purple' },
+  { label: 'Pre-commit',   desc: 'Ruff lint + format\nBandit SAST · gitleaks\npip-audit · npm audit\npytest + 70% cov', icon: Terminal, color: 'purple' },
   { label: 'CI Lint',      desc: 'ESLint (UI)\nRuff (API)\nfeature branches',            icon: Code2,    color: 'violet' },
   { label: 'CI Tests',     desc: 'pytest + asyncio\nVitest + jsdom\nMSW mocks',          icon: TestTube2,color: 'amber'  },
   { label: 'Deploy',       desc: 'Docker → ECR\nLambda update\nS3 + CloudFront',         icon: Rocket,   color: 'rose'   },
@@ -220,7 +225,7 @@ function OverviewTab() {
           <div className="flex items-center gap-2 mb-1">
             <Shield className="w-4 h-4 text-emerald-400" />
             <span className="text-ink-200 text-sm font-display font-600">Security Posture</span>
-            <span className="ml-auto text-emerald-400 text-xs font-mono">12 / 12</span>
+            <span className="ml-auto text-emerald-400 text-xs font-mono">17 / 17</span>
           </div>
           <div className="card p-4 space-y-2">
             {SECURITY_CHECKS.map((check) => (
@@ -345,7 +350,7 @@ const TECH_STACK = [
     category: 'Tooling',
     icon: Terminal,
     color: 'amber',
-    items: ['Ruff (lint + format)', 'ESLint 9', 'pre-commit hooks', 'mypy', 'bandit', 'structlog + Prometheus'],
+    items: ['Ruff (lint + format)', 'ESLint 9', 'pre-commit hooks', 'mypy', 'bandit', 'gitleaks', 'pip-audit', 'trivy', 'structlog + Prometheus'],
   },
   {
     category: 'CI/CD',
@@ -679,7 +684,7 @@ function PipelineView() {
           {/* Unit Tests */}
           <div className="grid grid-cols-2 gap-4 items-stretch">
             <StageNode icon={TestTube2} label="Unit Tests" sublabel="pytest · 70% coverage enforced"   status={ss(3)} steps={['25+ test files', 'pytest-asyncio', 'SQLite in-memory DB', 'factory-boy fixtures']} />
-            <StageNode icon={TestTube2} label="Unit Tests" sublabel="Vitest · 30% threshold"            status={ss(3)} steps={['4 test suites', 'jsdom environment', 'MSW API mocking', '@testing-library/react']} />
+            <StageNode icon={TestTube2} label="Unit Tests" sublabel="Vitest · 70% threshold"            status={ss(3)} steps={['4 test suites', 'jsdom environment', 'MSW API mocking', '@testing-library/react']} />
           </div>
           <div className="grid grid-cols-2 gap-4"><FlowLine status={cs(4)} /><FlowLine status={cs(4)} /></div>
           {/* Build */}
