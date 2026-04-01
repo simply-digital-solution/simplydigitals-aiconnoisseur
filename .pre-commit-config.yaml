@@ -34,6 +34,13 @@ repos:
   # ── Local: pytest + coverage (API) and Vitest (UI) ────────────────────────
   - repo: local
     hooks:
+      - id: remove-finder-duplicates
+        name: "Remove macOS Finder duplicate files (* 2.*)"
+        entry: bash -c 'found=$(git ls-files | grep " 2\(\.\|$\)"); if [ -n "$found" ]; then echo "$found" | xargs git rm -f; echo "Removed Finder duplicates — please re-stage and retry commit"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: api-pytest-coverage
         name: "API — pytest + coverage (min 70%)"
         entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/python -m pytest'
