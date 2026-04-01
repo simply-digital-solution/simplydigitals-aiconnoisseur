@@ -121,9 +121,9 @@ describe('LoginPage', () => {
 
   // ── Google Sign-In ──────────────────────────────────────────────────────────
 
-  it('renders the "or continue with" divider', () => {
+  it('renders the "or sign in with email" divider', () => {
     renderLogin()
-    expect(screen.getByText(/or continue with/i)).toBeInTheDocument()
+    expect(screen.getByText(/or sign in with email/i)).toBeInTheDocument()
   })
 
   it('renders the Google Sign-In button', () => {
