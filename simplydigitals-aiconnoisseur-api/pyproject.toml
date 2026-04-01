@@ -32,6 +32,10 @@ dependencies = [
     "passlib[bcrypt]==1.7.4",
     "bcrypt==4.0.1",
     "slowapi>=0.1.9",
+    # Pinned to fix known CVEs in transitive deps
+    "cryptography>=46.0.6",   # CVE-2026-34073: name constraint bypass
+    "ecdsa>=0.19.2",           # CVE-2026-33936: malformed DER DoS
+    "requests>=2.33.0",        # CVE-2026-25645: predictable tmp filename
 
     # Validation
     "pydantic>=2.7.0",
@@ -39,7 +43,7 @@ dependencies = [
     "email-validator>=2.1.1",
 
     # ML / Data Science
-    "scikit-learn>=1.4.2,<1.5.0",
+    "scikit-learn>=1.5.0,<1.6.0",  # PYSEC-2024-110 fixed in 1.5.0
     "pandas>=2.2.2,<2.3.0",
     "numpy>=1.26.4,<2.0.0",
     "joblib>=1.4.0",
@@ -72,6 +76,7 @@ dev = [
     "ruff>=0.4.4",
     "mypy>=1.10.0",
     "bandit[toml]>=1.7.8",
+    "pip-audit>=2.7.0",
     "safety>=3.2.0",
     "types-passlib>=1.7.7.20240327",
     "types-python-jose>=3.3.4.20240106",

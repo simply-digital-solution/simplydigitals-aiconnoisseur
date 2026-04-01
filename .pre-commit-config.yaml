@@ -1,4 +1,10 @@
 repos:
+  # ── Gitleaks: secret & token scanning ─────────────────────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
   # ── Ruff: Python linter + formatter ───────────────────────────────────────
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.4
@@ -41,3 +47,29 @@ repos:
         language: system
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-ui/.*\.(jsx?|tsx?|js|ts)$
+
+      - id: api-bandit
+        name: "API — Bandit SAST"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/bandit -r app -ll -q'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-api/.*\.py$
+
+      - id: api-pip-audit
+        name: "API — pip-audit CVE scan"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/pip freeze --exclude-editable | .venv/bin/pip-audit -r /dev/stdin --desc
+          --ignore-vuln CVE-2024-23342
+          --ignore-vuln GHSA-rf74-v2fm-23pw
+          --ignore-vuln CVE-2026-33230
+          --ignore-vuln CVE-2026-33231
+          --ignore-vuln CVE-2026-4539'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-api/(pyproject\.toml|requirements.*\.txt)$
+
+      - id: ui-npm-audit
+        name: "UI — npm audit CVE scan"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npm audit --audit-level=high'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-ui/package(-lock)?\.json$
