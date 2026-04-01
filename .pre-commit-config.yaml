@@ -48,6 +48,13 @@ repos:
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-api/.*\.py$
 
+      - id: ui-eslint
+        name: "UI — ESLint"
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx eslint src --ext .js,.jsx --max-warnings 0'
+        language: system
+        pass_filenames: false
+        files: ^simplydigitals-aiconnoisseur-ui/.*\.(jsx?|js)$
+
       - id: ui-vitest
         name: "UI — Vitest unit tests + coverage"
         entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run --coverage'
