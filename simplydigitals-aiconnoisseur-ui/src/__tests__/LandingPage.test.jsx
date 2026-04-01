@@ -25,6 +25,20 @@ describe('LandingPage', () => {
     expect(link).toHaveAttribute('href', '/login')
   })
 
+  it('renders the nav "Launch App" button linking to /login', () => {
+    renderLanding()
+    const link = screen.getByRole('link', { name: /Launch App/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/login')
+  })
+
+  it('renders the CTA "Launch AIConnoisseur" button linking to /login', () => {
+    renderLanding()
+    const link = screen.getByRole('link', { name: /Launch AIConnoisseur/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/login')
+  })
+
   it('renders the "Tech Architecture" link pointing to /showcase', () => {
     renderLanding()
     const links = screen.getAllByRole('link', { name: /Tech Architecture/i })
