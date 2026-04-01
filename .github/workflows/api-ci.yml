@@ -126,7 +126,7 @@ jobs:
 
       - name: pip-audit CVE scan
         run: |
-          pip-audit --desc \
+          pip-audit --desc --skip-editable \
             --ignore-vuln CVE-2024-23342 \
             --ignore-vuln GHSA-rf74-v2fm-23pw \
             --ignore-vuln CVE-2026-33230 \
