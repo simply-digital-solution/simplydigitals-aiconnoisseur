@@ -4,7 +4,6 @@ import { useStore } from './store'
 import Layout from './components/layout/Layout'
 import LoginPage from './components/layout/LoginPage'
 import Dashboard from './components/layout/Dashboard'
-import TechShowcasePage from './components/showcase/TechShowcasePage'
 import LandingPage from './components/landing/LandingPage'
 import { authApi } from './utils/api'
 
@@ -26,7 +25,6 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/showcase" element={<TechShowcasePage />} />
       <Route
         path="/*"
         element={

@@ -13,9 +13,6 @@ vi.mock('../components/layout/Layout', () => ({
 vi.mock('../components/layout/Dashboard', () => ({
   default: () => <div data-testid="dashboard">Dashboard</div>,
 }))
-vi.mock('../components/showcase/TechShowcasePage', () => ({
-  default: () => <div data-testid="showcase">Showcase</div>,
-}))
 vi.mock('../components/landing/LandingPage', () => ({
   default: () => <div data-testid="landing">Landing</div>,
 }))

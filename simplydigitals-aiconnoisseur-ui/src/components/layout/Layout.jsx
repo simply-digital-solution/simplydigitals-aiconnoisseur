@@ -1,5 +1,5 @@
 import { useStore } from '../../store'
-import { Cpu, Upload, Table2, BarChart3, Settings2, FlaskConical, LogOut, ChevronRight, UserCircle, Layers } from 'lucide-react'
+import { Cpu, Upload, Table2, BarChart3, Settings2, FlaskConical, LogOut, ChevronRight, UserCircle } from 'lucide-react'
 
 const NAV = [
   { id: 'upload',        icon: Upload,        label: 'Data Upload' },
@@ -7,10 +7,6 @@ const NAV = [
   { id: 'plots',         icon: BarChart3,      label: 'Visualisations' },
   { id: 'preprocessing', icon: Settings2,      label: 'Preprocessing' },
   { id: 'abtesting',     icon: FlaskConical,   label: 'A/B Testing' },
-]
-
-const NAV_BOTTOM = [
-  { id: 'showcase', icon: Layers, label: 'Tech Showcase' },
 ]
 
 export default function Layout({ children }) {
@@ -66,25 +62,6 @@ export default function Layout({ children }) {
             )
           })}
         </nav>
-
-        {/* Bottom nav */}
-        <div className="px-3 pb-2 space-y-1">
-          {NAV_BOTTOM.map(({ id, icon: Icon, label }) => {
-            const isActive = activeSection === id
-            return (
-              <button key={id} onClick={() => setActiveSection(id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
-                  ${isActive
-                    ? 'bg-purple-500/25 text-white border border-purple-400/50'
-                    : 'text-ink-400 hover:text-white hover:bg-ink-800'
-                  }`}>
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="font-body flex-1 text-left">{label}</span>
-                {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
-              </button>
-            )
-          })}
-        </div>
 
         {/* Footer */}
         <div className="px-3 py-3 border-t border-ink-600 space-y-1">
