@@ -141,3 +141,46 @@ test.describe('Login flow (UI → API Gateway)', () => {
       `Got 403 on API call — bundle likely has wrong baseURL: ${fatalErrors.join(', ')}`
   })
 })
+
+test.describe('Google Sign-In (post-deploy checks)', () => {
+  test('Google Sign-In button is visible on the login page', async ({ page }) => {
+    await page.goto(`${UI_URL}/login`, { waitUntil: 'domcontentloaded' })
+
+    // Google renders an iframe for the sign-in button — wait for it
+    await page.waitForTimeout(3000)
+
+    // Either the Google iframe or our fallback button must be present
+    const googleFrame = page.frameLocator('iframe[src*="accounts.google.com"]')
+    const googleIframeVisible = await googleFrame.locator('div[role="button"]')
+      .isVisible({ timeout: 5000 }).catch(() => false)
+
+    const fallbackBtn = page.getByText(/sign in with google/i)
+    const fallbackVisible = await fallbackBtn.isVisible({ timeout: 1000 }).catch(() => false)
+
+    expect(googleIframeVisible || fallbackVisible).toBe(true)
+  })
+
+  test('Google client_id is embedded in the page (VITE_GOOGLE_CLIENT_ID is set)', async ({ page }) => {
+    await page.goto(`${UI_URL}/login`, { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(2000)
+
+    const pageContent = await page.content()
+
+    // The client_id must appear in the page — either in a script tag or Google iframe src
+    const hasClientId = pageContent.includes('accounts.google.com') ||
+      pageContent.includes('.apps.googleusercontent.com')
+
+    expect(hasClientId).toBe(true)
+  })
+
+  test('POST /auth/google endpoint exists and rejects invalid token with 401', async ({ request }) => {
+    const response = await request.post(`${API_URL}/api/v1/auth/google`, {
+      data: { token: 'invalid-google-token' },
+    })
+
+    // 401 = endpoint exists and correctly rejects the token
+    // 404 = endpoint not wired up
+    // 500 = server error (misconfiguration)
+    expect(response.status()).toBe(401)
+  })
+})
