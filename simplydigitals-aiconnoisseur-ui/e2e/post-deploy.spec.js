@@ -122,6 +122,37 @@ test.describe('Registration flow (UI → API Gateway)', () => {
 })
 
 test.describe('Login flow (UI → API Gateway)', () => {
+  test('successful login redirects to dashboard, not landing page or external site', async ({ page }) => {
+    // Register a fresh user then log in to verify post-login destination
+    const email = `e2e-nav-${Date.now()}@example.com`
+    const password = 'E2eTest1234!'
+
+    // Register
+    await page.goto(`${UI_URL}/login`)
+    await page.getByText(/register/i).first().click()
+    await page.getByPlaceholder(/jane smith/i).fill('Nav Test')
+    await page.getByPlaceholder(/you@example\.com/i).fill(email)
+    const passwordFields = page.locator('input[type="password"]')
+    await passwordFields.first().fill(password)
+    if (await passwordFields.count() > 1) await passwordFields.nth(1).fill(password)
+    await page.locator('button[type="submit"]').click()
+    await page.waitForTimeout(2000)
+
+    // Log in
+    await page.getByText(/^login$/i).first().click()
+    await page.getByPlaceholder(/you@example\.com/i).fill(email)
+    await page.locator('input[type="password"]').fill(password)
+    await page.locator('button[type="submit"]').click()
+    await page.waitForTimeout(3000)
+
+    // Must stay on the same origin (not redirected to an external site)
+    expect(page.url()).toContain(new URL(UI_URL).hostname)
+
+    // Must not be on the landing page or login page
+    expect(page.url()).not.toMatch(/\/$/)
+    expect(page.url()).not.toContain('/login')
+  })
+
   test('login with wrong password shows an error, not a 403', async ({ page }) => {
     const fatalErrors = []
     page.on('response', (res) => {
