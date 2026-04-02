@@ -7,14 +7,26 @@ vi.mock('../utils/api', () => ({ authApi: { me: vi.fn() } }))
 vi.mock('../components/layout/LoginPage', () => ({
   default: () => <div data-testid="login-page">Login Page</div>,
 }))
-vi.mock('../components/layout/Layout', () => ({
-  default: ({ children }) => <div data-testid="layout">{children}</div>,
-}))
-vi.mock('../components/layout/Dashboard', () => ({
-  default: () => <div data-testid="dashboard">Dashboard</div>,
+vi.mock('../components/hub/AppHub', () => ({
+  default: () => <div data-testid="app-hub">App Hub</div>,
 }))
 vi.mock('../components/landing/LandingPage', () => ({
   default: () => <div data-testid="landing">Landing</div>,
+}))
+// Mock all product lazy imports via the registry
+vi.mock('../products/registry', () => ({
+  PRODUCTS: [
+    {
+      id: 'connoisseur',
+      name: 'AI Connoisseur',
+      tagline: '',
+      Icon: () => null,
+      color: 'purple',
+      path: '/app/connoisseur',
+      description: '',
+      lazy: () => Promise.resolve({ default: () => <div data-testid="connoisseur-app">Connoisseur</div> }),
+    },
+  ],
 }))
 
 import App from '../App'
@@ -34,27 +46,34 @@ describe('App routing', () => {
     authApi.me.mockResolvedValue({ data: { full_name: 'Test User', email: 'test@example.com' } })
   })
 
-  it('shows login page at /login route when unauthenticated', () => {
+  it('renders landing page at /', () => {
+    useStore.mockImplementation(makeStore(null))
+    render(<MemoryRouter initialEntries={['/']}><App /></MemoryRouter>)
+    expect(screen.getByTestId('landing')).toBeInTheDocument()
+  })
+
+  it('renders login page at /login', () => {
     useStore.mockImplementation(makeStore(null))
     render(<MemoryRouter initialEntries={['/login']}><App /></MemoryRouter>)
     expect(screen.getByTestId('login-page')).toBeInTheDocument()
   })
 
-  it('redirects to login when unauthenticated user visits protected route', () => {
+  it('redirects unauthenticated user from /app to /login', () => {
     useStore.mockImplementation(makeStore(null))
-    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
-    expect(screen.queryByTestId('dashboard')).not.toBeInTheDocument()
+    render(<MemoryRouter initialEntries={['/app']}><App /></MemoryRouter>)
+    expect(screen.queryByTestId('app-hub')).not.toBeInTheDocument()
+    expect(screen.getByTestId('login-page')).toBeInTheDocument()
   })
 
-  it('shows dashboard when user is authenticated', () => {
-    useStore.mockImplementation(makeStore('mock-jwt-token'))
-    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
-    expect(screen.getByTestId('dashboard')).toBeInTheDocument()
+  it('renders AppHub at /app when authenticated', () => {
+    useStore.mockImplementation(makeStore('mock-jwt'))
+    render(<MemoryRouter initialEntries={['/app']}><App /></MemoryRouter>)
+    expect(screen.getByTestId('app-hub')).toBeInTheDocument()
   })
 
   it('fetches user profile on mount when token exists', async () => {
-    useStore.mockImplementation(makeStore('mock-jwt-token'))
-    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
+    useStore.mockImplementation(makeStore('mock-jwt'))
+    render(<MemoryRouter initialEntries={['/app']}><App /></MemoryRouter>)
     await waitFor(() => expect(authApi.me).toHaveBeenCalledOnce())
     expect(mockSetUser).toHaveBeenCalledWith({ full_name: 'Test User', email: 'test@example.com' })
   })
@@ -63,5 +82,12 @@ describe('App routing', () => {
     useStore.mockImplementation(makeStore(null))
     render(<MemoryRouter initialEntries={['/login']}><App /></MemoryRouter>)
     expect(authApi.me).not.toHaveBeenCalled()
+  })
+
+  it('redirects /dashboard to /app/connoisseur for authenticated user', () => {
+    useStore.mockImplementation(makeStore('mock-jwt'))
+    render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
+    // Should not render the login page — a redirect happened
+    expect(screen.queryByTestId('login-page')).not.toBeInTheDocument()
   })
 })

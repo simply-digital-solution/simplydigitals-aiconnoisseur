@@ -1,5 +1,6 @@
 import { useStore } from '../../store'
 import { Cpu, Upload, Table2, BarChart3, Settings2, FlaskConical, LogOut, ChevronRight, UserCircle } from 'lucide-react'
+import ProductHeader from '../shared/ProductHeader'
 
 const NAV = [
   { id: 'upload',        icon: Upload,        label: 'Data Upload' },
@@ -16,8 +17,13 @@ export default function Layout({ children }) {
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 flex-shrink-0 bg-ink-900 border-r border-ink-700/50 flex flex-col">
+        {/* Back to hub */}
+        <div className="px-5 pt-4 pb-2">
+          <ProductHeader />
+        </div>
+
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-ink-700/50">
+        <div className="px-5 py-4 border-b border-ink-700/50">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
               <Cpu className="w-5 h-5 text-purple-400" />

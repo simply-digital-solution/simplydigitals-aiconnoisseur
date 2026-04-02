@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('../store', () => ({ useStore: vi.fn() }))
 
@@ -22,7 +23,11 @@ function makeStore({ activeSection = 'upload', activeDataset = null, user = null
 
 function renderLayout(storeOpts = {}) {
   useStore.mockImplementation(makeStore(storeOpts))
-  return render(<Layout><div data-testid="child">Content</div></Layout>)
+  return render(
+    <MemoryRouter>
+      <Layout><div data-testid="child">Content</div></Layout>
+    </MemoryRouter>
+  )
 }
 
 describe('Layout sidebar nav', () => {

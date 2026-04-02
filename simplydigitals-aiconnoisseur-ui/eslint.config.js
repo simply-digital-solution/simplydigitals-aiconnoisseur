@@ -16,7 +16,7 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: { ...globals.browser, __API_BASE_URL__: 'readonly' },
+      globals: { ...globals.browser, __API_BASE_URL__: 'readonly', __ARBITRAGEUR_API_BASE_URL__: 'readonly' },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },

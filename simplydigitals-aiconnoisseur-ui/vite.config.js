@@ -17,11 +17,19 @@ export default defineConfig(({ mode }) => {
           target: apiTarget,
           changeOrigin: true,
         },
+        '/arb': {
+          target: env.VITE_ARBITRAGEUR_API_BASE_URL || 'http://localhost:8001',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/arb/, '/api'),
+        },
       },
     },
     define: {
       __API_BASE_URL__: JSON.stringify(
         mode === 'production' ? apiTarget : ''
+      ),
+      __ARBITRAGEUR_API_BASE_URL__: JSON.stringify(
+        mode === 'production' ? (env.VITE_ARBITRAGEUR_API_BASE_URL || '') : ''
       ),
     },
     test: {

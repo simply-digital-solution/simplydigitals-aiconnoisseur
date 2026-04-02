@@ -22,7 +22,7 @@ export default function LoginPage() {
       const { data } = await authApi.googleLogin(credentialResponse.credential)
       setToken(data.access_token)
       toast.success('Welcome!')
-      navigate('/dashboard')
+      navigate('/app')
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Google sign-in failed')
     } finally {
@@ -42,7 +42,7 @@ export default function LoginPage() {
         const { data } = await authApi.login({ email: form.email, password: form.password })
         setToken(data.access_token)
         toast.success('Welcome back')
-        navigate('/dashboard')
+        navigate('/app')
       }
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Something went wrong')
