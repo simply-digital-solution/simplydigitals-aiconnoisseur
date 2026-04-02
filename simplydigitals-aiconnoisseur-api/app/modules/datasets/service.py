@@ -13,11 +13,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.datasets.models import Dataset
+from app.shared import s3_service
 from app.shared.config import get_settings
 from app.shared.logging import get_logger
 
 logger = get_logger(__name__)
 settings = get_settings()
+
+_HISTORY_LIMIT = 5
 
 
 def _get_client_ip(request: Request) -> str | None:
@@ -58,6 +61,29 @@ class DatasetService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    # ── internal helpers ────────────────────────────────────────────────────
+
+    async def _enforce_history_limit(self, owner_id: str) -> None:
+        """Delete the oldest dataset(s) when the user already has _HISTORY_LIMIT files."""
+        result = await self.db.execute(
+            select(Dataset).where(Dataset.owner_id == owner_id).order_by(Dataset.created_at.asc())
+        )
+        all_datasets = list(result.scalars().all())
+        while len(all_datasets) >= _HISTORY_LIMIT:
+            oldest = all_datasets.pop(0)
+            await self._remove_files(oldest)
+            await self.db.delete(oldest)
+            logger.info("dataset_evicted", dataset_id=oldest.id, owner_id=owner_id)
+
+    async def _remove_files(self, dataset: Dataset) -> None:
+        """Remove local file and S3 object for a dataset."""
+        if dataset.s3_key and s3_service.is_enabled():
+            s3_service.delete_object(dataset.s3_key)
+        if dataset.file_path and os.path.exists(dataset.file_path):
+            os.remove(dataset.file_path)
+
+    # ── public API ──────────────────────────────────────────────────────────
+
     async def upload(
         self,
         file: UploadFile,
@@ -72,28 +98,47 @@ class DatasetService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=t("datasets.invalid_type"),
             )
-        os.makedirs(settings.MODEL_ARTEFACT_DIR, exist_ok=True)
-        file_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{uuid.uuid4()}.csv")
         content = await file.read()
         if not content:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=t("datasets.empty_file"),
             )
-        with open(file_path, "wb") as f:
-            f.write(content)
+
+        # Parse before persisting so we can reject bad CSVs cheaply
         try:
-            df = pd.read_csv(file_path)
+            import io
+
+            df = pd.read_csv(io.BytesIO(content))
         except Exception as exc:
-            os.remove(file_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=t("datasets.parse_error", detail=str(exc)),
             ) from exc
+
+        # Enforce 5-file-per-user limit before inserting
+        await self._enforce_history_limit(owner_id)
+
+        file_id = str(uuid.uuid4())
+        s3_key: str | None = None
+        file_path: str
+
+        if s3_service.is_enabled():
+            s3_key = f"datasets/{owner_id}/{file_id}.csv"
+            s3_service.upload_csv(s3_key, content)
+            # Store a placeholder path — Lambda /tmp is used for any local cache
+            file_path = os.path.join(os.environ.get("TMPDIR", "/tmp"), "datasets", f"{file_id}.csv")  # nosec B108
+        else:
+            os.makedirs(settings.MODEL_ARTEFACT_DIR, exist_ok=True)
+            file_path = os.path.join(settings.MODEL_ARTEFACT_DIR, f"{file_id}.csv")
+            with open(file_path, "wb") as f:
+                f.write(content)
+
         dataset = Dataset(
             name=name,
             description=description,
             file_path=file_path,
+            s3_key=s3_key,
             row_count=len(df),
             column_count=len(df.columns),
             profile=_profile_dataframe(df),
@@ -107,6 +152,16 @@ class DatasetService:
 
     async def list_datasets(self, owner_id: str) -> list[Dataset]:
         result = await self.db.execute(select(Dataset).where(Dataset.owner_id == owner_id))
+        return list(result.scalars().all())
+
+    async def get_history(self, owner_id: str) -> list[Dataset]:
+        """Return the last _HISTORY_LIMIT datasets for the user, newest first."""
+        result = await self.db.execute(
+            select(Dataset)
+            .where(Dataset.owner_id == owner_id)
+            .order_by(Dataset.created_at.desc())
+            .limit(_HISTORY_LIMIT)
+        )
         return list(result.scalars().all())
 
     async def get(
@@ -133,7 +188,6 @@ class DatasetService:
         t: Callable[..., str] = _noop,
     ) -> None:
         dataset = await self.get(dataset_id, owner_id, t)
-        if os.path.exists(dataset.file_path):
-            os.remove(dataset.file_path)
+        await self._remove_files(dataset)
         await self.db.delete(dataset)
         logger.info("dataset_deleted", dataset_id=dataset_id)

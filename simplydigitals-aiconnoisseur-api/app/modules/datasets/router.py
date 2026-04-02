@@ -38,6 +38,15 @@ async def list_datasets(
     return [DatasetRead.model_validate(d) for d in datasets]
 
 
+@router.get("/history", response_model=list[DatasetRead])
+async def get_dataset_history(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[DatasetRead]:
+    history = await DatasetService(db).get_history(current_user.id)
+    return [DatasetRead.model_validate(d) for d in history]
+
+
 @router.get("/{dataset_id}", response_model=DatasetRead)
 async def get_dataset(
     dataset_id: str,

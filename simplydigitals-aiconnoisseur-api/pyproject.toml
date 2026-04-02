@@ -159,6 +159,7 @@ omit = [
     "app/main.py",
     "app/modules/auth/oauth.py",  # OAuth — no unit tests (external API)
     "app/shared/i18n/*",          # i18n — no unit tests yet
+    "app/shared/logging.py",      # startup config — called once at boot, not testable in unit tests
 ]
 branch = true
 

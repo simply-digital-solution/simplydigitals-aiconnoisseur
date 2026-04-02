@@ -27,6 +27,7 @@ class Dataset(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    s3_key: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     row_count: Mapped[int] = mapped_column(Integer, default=0)
     column_count: Mapped[int] = mapped_column(Integer, default=0)
     profile: Mapped[dict | None] = mapped_column(JSON)

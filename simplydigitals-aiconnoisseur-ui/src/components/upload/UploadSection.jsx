@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { Upload, FileText, CheckCircle2, Trash2, ChevronRight, Database, Hash } from 'lucide-react'
 import { useStore } from '../../store'
 import { datasetApi } from '../../utils/api'
+import HistorySection from './HistorySection'
 
 export default function UploadSection() {
   const { setActiveDataset, setParsedData, setActiveSection, datasets, setDatasets } = useStore()
@@ -136,6 +137,9 @@ export default function UploadSection() {
           </button>
         </div>
       )}
+
+      {/* Dataset history */}
+      <HistorySection />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-4">

@@ -40,6 +40,7 @@ export const authApi = {
 // ── Datasets ─────────────────────────────────────────────────────────────────
 export const datasetApi = {
   list: () => api.get('/datasets/'),
+  history: () => api.get('/datasets/history'),
   upload: (formData) => api.post('/datasets/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (e) => e.onUploadProgress?.(e),

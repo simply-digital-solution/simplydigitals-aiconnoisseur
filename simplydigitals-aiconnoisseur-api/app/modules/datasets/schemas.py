@@ -24,6 +24,7 @@ class DatasetRead(_Base):
     row_count: int
     column_count: int
     client_ip: str | None = None
+    s3_key: str | None = None
     owner_id: str
     created_at: datetime
 
