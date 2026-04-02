@@ -23,6 +23,7 @@ class DatasetRead(_Base):
     description: str | None = None
     row_count: int
     column_count: int
+    file_size_bytes: int = 0
     client_ip: str | None = None
     s3_key: str | None = None
     owner_id: str

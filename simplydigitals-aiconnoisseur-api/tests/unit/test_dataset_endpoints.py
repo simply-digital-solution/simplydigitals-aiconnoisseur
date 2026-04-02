@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _csv_bytes(rows: int = 50) -> bytes:
@@ -149,3 +150,46 @@ class TestDatasetDelete:
     ) -> None:
         response = await client.delete("/api/v1/datasets/nonexistent-id", headers=auth_headers)
         assert response.status_code == 404
+
+    async def test_delete_calls_s3_delete_object_when_s3_key_set(
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+        db_session: AsyncSession,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """When a dataset has an s3_key, deleting it must remove the S3 object."""
+        from app.modules.datasets.models import Dataset
+        from app.shared import s3_service
+
+        deleted_keys: list[str] = []
+
+        monkeypatch.setattr(s3_service, "is_enabled", lambda: True)
+        monkeypatch.setattr(s3_service, "delete_object", lambda key: deleted_keys.append(key))
+
+        # Insert a dataset directly with a fake s3_key
+        ds = Dataset(
+            name="s3-backed",
+            file_path="/tmp/fake.csv",
+            s3_key="datasets/user/fake-uuid.csv",
+            row_count=10,
+            column_count=3,
+            owner_id="test-owner",
+        )
+        db_session.add(ds)
+        await db_session.commit()
+        await db_session.refresh(ds)
+
+        # Override owner so auth passes
+        from app.modules.auth.models import User
+        from sqlalchemy import select
+
+        result = await db_session.execute(select(User))
+        user = result.scalar_one()
+        ds.owner_id = user.id
+        await db_session.commit()
+        await db_session.refresh(ds)
+
+        resp = await client.delete(f"/api/v1/datasets/{ds.id}", headers=auth_headers)
+        assert resp.status_code in (200, 204)
+        assert ds.s3_key in deleted_keys
