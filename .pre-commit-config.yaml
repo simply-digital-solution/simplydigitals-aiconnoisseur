@@ -43,7 +43,7 @@ repos:
 
       - id: api-pytest-coverage
         name: "API — pytest + coverage (min 70%)"
-        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/python -m pytest'
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-api && .venv/bin/python -m pytest 2>&1 | tee /tmp/.pre-commit-api-pytest.txt; exit ${PIPESTATUS[0]}'
         language: system
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-api/.*\.py$
@@ -57,7 +57,7 @@ repos:
 
       - id: ui-vitest
         name: "UI — Vitest unit tests + coverage"
-        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run --coverage'
+        entry: bash -c 'cd simplydigitals-aiconnoisseur-ui && npx vitest run --coverage 2>&1 | tee /tmp/.pre-commit-ui-vitest.txt; exit ${PIPESTATUS[0]}'
         language: system
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-ui/.*\.(jsx?|tsx?|js|ts)$
@@ -87,3 +87,11 @@ repos:
         language: system
         pass_filenames: false
         files: ^simplydigitals-aiconnoisseur-ui/package(-lock)?\.json$
+
+      - id: test-summary
+        name: "Test Results Summary"
+        entry: bash scripts/pre-commit-summary.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        verbose: true
