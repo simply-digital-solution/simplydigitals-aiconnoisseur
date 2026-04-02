@@ -74,7 +74,7 @@ export default function LoginPage() {
 
         <div className="card p-8">
           {/* Google Sign-In */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-5" data-testid="google-signin-container">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => toast.error('Google sign-in failed')}

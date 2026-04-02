@@ -63,4 +63,11 @@ vi.mock('lucide-react', () => ({
   Hash: () => null,
   FileText: () => null,
   ChevronRight: () => null,
+  ZoomIn: () => null,
+  X: () => null,
+  BarChart3: () => null,
+  Activity: () => null,
+  ScatterChart: () => null,
+  TrendingUp: () => null,
+  PieChart: () => null,
 }))
