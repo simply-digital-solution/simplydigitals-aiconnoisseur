@@ -20,7 +20,7 @@ export default function App() {
     if (token) {
       authApi.me().then(({ data }) => setUser(data)).catch(() => {})
     }
-  }, [token])
+  }, [token, setUser])
 
   return (
     <Routes>

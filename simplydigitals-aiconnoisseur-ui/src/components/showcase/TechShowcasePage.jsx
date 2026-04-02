@@ -960,7 +960,6 @@ function SystemDesignView() {
                     rx="8" fill="#14141f" stroke={nodeColor} strokeWidth="1.5" strokeOpacity="0.6" />
                   <foreignObject x={x - HW + 8} y={y - 11} width="22" height="22">
                     <div
-                      // eslint-disable-next-line react/no-unknown-property
                       xmlns="http://www.w3.org/1999/xhtml"
                       style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >

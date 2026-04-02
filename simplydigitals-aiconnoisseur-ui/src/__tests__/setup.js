@@ -1,6 +1,13 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Mock IntersectionObserver — not available in jsdom
+global.IntersectionObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // Mock localStorage globally — Zustand store reads it on module init
 const _storage = {}
 const localStorageMock = {

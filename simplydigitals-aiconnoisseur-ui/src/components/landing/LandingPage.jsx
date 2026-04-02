@@ -125,10 +125,9 @@ export default function LandingPage() {
           {[['#about','About'],['#vision','Vision'],['#differentiators','Why Us'],['#tech','Tech']].map(([href, label]) => (
             <a key={href} href={href} className="text-sm text-ink-300 hover:text-ink-50 transition-colors font-500">{label}</a>
           ))}
-          <a href="https://www.simplydigitals.com.sg" target="_blank" rel="noreferrer"
-            className="btn-primary text-sm px-4 py-2">
+          <Link to="/login" className="btn-primary text-sm px-4 py-2">
             Launch App ↗
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -153,9 +152,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <a href="https://www.simplydigitals.com.sg" target="_blank" rel="noreferrer" className="btn-primary">
+            <Link to="/login" className="btn-primary">
               ⚡ View Live Platform
-            </a>
+            </Link>
             <Link to="/showcase"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-ink-600 bg-ink-800/50 text-ink-100 font-display font-600 text-base transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/8">
               🏗️ Tech Architecture
@@ -329,9 +328,9 @@ export default function LandingPage() {
               Explore the platform, walk through the technical architecture, or dive into the source code on GitHub.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <a href="https://www.simplydigitals.com.sg" target="_blank" rel="noreferrer" className="btn-primary">
+              <Link to="/login" className="btn-primary">
                 ⚡ Launch AIConnoisseur
-              </a>
+              </Link>
               <Link to="/showcase"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-ink-600 bg-ink-800/50 text-ink-100 font-display font-600 text-base transition-all duration-200 hover:border-purple-500/40 hover:bg-purple-500/8">
                 🏗️ Tech Architecture
@@ -353,7 +352,7 @@ export default function LandingPage() {
         <p className="text-xs text-ink-500">© 2026 Simply Digital Solutions · Singapore</p>
         <div className="flex gap-6">
           {[
-            ['https://www.simplydigitals.com.sg', 'Product'],
+            ['/login', 'Product', true],
             ['/showcase', 'Architecture', true],
             ['https://github.com/simply-digital-solution/simplydigitals-aiconnoisseur', 'GitHub'],
           ].map(([href, label, internal]) =>
