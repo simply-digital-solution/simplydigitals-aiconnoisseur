@@ -34,7 +34,7 @@ export const authApi = {
   login: (data) => api.post('/auth/login', data),
   refresh: (token) => api.post('/auth/refresh', { refresh_token: token }),
   me: () => api.get('/auth/me'),
-  googleLogin: (token) => api.post('/auth/google', { token }),
+  googleLogin: (token) => api.post('/auth/google', { id_token: token }),
 }
 
 // ── Datasets ─────────────────────────────────────────────────────────────────

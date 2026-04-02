@@ -142,6 +142,38 @@ class TestMe:
         assert r.status_code in (401, 403)
 
 
+class TestGoogleLogin:
+    async def test_missing_id_token_returns_422(self, client: AsyncClient) -> None:
+        """Sending wrong field name (e.g. 'token' instead of 'id_token') returns 422."""
+        r = await client.post("/api/v1/auth/google", json={"token": "anything"})
+        assert r.status_code == 422
+
+    async def test_empty_body_returns_422(self, client: AsyncClient) -> None:
+        r = await client.post("/api/v1/auth/google", json={})
+        assert r.status_code == 422
+
+    async def test_endpoint_is_wired_up(self, client: AsyncClient) -> None:
+        """Endpoint must exist — 404 means it's missing from the router."""
+        r = await client.post("/api/v1/auth/google", json={"id_token": "x"})
+        assert r.status_code != 404
+
+    async def test_invalid_token_returns_401(
+        self, client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A well-formed request with a bad token must return 401, not 500."""
+        import httpx
+        from app.modules.auth import oauth as oauth_module
+
+        async def _fake_verify(token, t=None):
+            from fastapi import HTTPException, status
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid")
+
+        monkeypatch.setattr(oauth_module, "verify_google_token", _fake_verify)
+        r = await client.post("/api/v1/auth/google", json={"id_token": "fake.jwt.token"})
+        assert r.status_code == 401
+
+
 class TestRegisterEdgeCases:
     async def test_missing_full_name_rejected(self, client: AsyncClient) -> None:
         r = await client.post("/api/v1/auth/register", json={"email": "x@y.com", "password": _PW})

@@ -175,10 +175,10 @@ test.describe('Google Sign-In (post-deploy checks)', () => {
 
   test('POST /auth/google endpoint exists and rejects invalid token with 401', async ({ request }) => {
     const response = await request.post(`${API_URL}/api/v1/auth/google`, {
-      data: { token: 'invalid-google-token' },
+      data: { id_token: 'invalid-google-token' },
     })
 
-    // 401 = endpoint exists and correctly rejects the token
+    // 401 = endpoint exists and Google rejected the token
     // 404 = endpoint not wired up
     // 500 = server error (misconfiguration)
     expect(response.status()).toBe(401)
