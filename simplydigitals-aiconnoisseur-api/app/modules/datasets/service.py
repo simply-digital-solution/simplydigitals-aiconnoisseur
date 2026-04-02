@@ -141,6 +141,7 @@ class DatasetService:
             s3_key=s3_key,
             row_count=len(df),
             column_count=len(df.columns),
+            file_size_bytes=len(content),
             profile=_profile_dataframe(df),
             client_ip=_get_client_ip(request),
             owner_id=owner_id,

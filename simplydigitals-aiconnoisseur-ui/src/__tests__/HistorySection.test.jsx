@@ -16,7 +16,7 @@ vi.mock('../store', () => ({
 }))
 
 vi.mock('../utils/api', () => ({
-  datasetApi: { history: vi.fn() },
+  datasetApi: { history: vi.fn(), delete: vi.fn() },
 }))
 
 vi.mock('react-hot-toast', () => ({
@@ -28,8 +28,8 @@ import { datasetApi } from '../utils/api'
 import toast from 'react-hot-toast'
 
 const MOCK_DATASETS = [
-  { id: '1', name: 'sales-2024', row_count: 1200, column_count: 8, created_at: '2024-06-15T10:00:00Z' },
-  { id: '2', name: 'marketing-q1', row_count: 340, column_count: 5, created_at: '2024-06-10T08:30:00Z' },
+  { id: '1', name: 'sales-2024', row_count: 1200, column_count: 8, file_size_bytes: 51200, created_at: '2024-06-15T10:00:00Z' },
+  { id: '2', name: 'marketing-q1', row_count: 340, column_count: 5, file_size_bytes: 8192, created_at: '2024-06-10T08:30:00Z' },
 ]
 
 function renderHistory() {
@@ -111,11 +111,89 @@ describe('HistorySection', () => {
     expect(toast.success).toHaveBeenCalledWith(`Loaded "${MOCK_DATASETS[0].name}"`)
   })
 
+  it('shows formatted file size in KB', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    renderHistory()
+    await waitFor(() => {
+      expect(screen.getByText('50.0 KB')).toBeInTheDocument() // 51200 bytes
+    })
+  })
+
   it('shows an error toast when the API call fails', async () => {
     datasetApi.history.mockRejectedValue(new Error('network'))
     renderHistory()
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Could not load dataset history')
+    })
+  })
+
+  // ── Delete ───────────────────────────────────────────────────────────────
+
+  it('renders a delete button for each dataset', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    renderHistory()
+    await waitFor(() => screen.getAllByText('Use'))
+    expect(screen.getAllByTestId(/^delete-/)).toHaveLength(2)
+  })
+
+  it('calls datasetApi.delete with the correct id', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    datasetApi.delete.mockResolvedValue({})
+    renderHistory()
+    await waitFor(() => screen.getAllByText('Use'))
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId(`delete-${MOCK_DATASETS[0].id}`))
+    })
+
+    await waitFor(() => {
+      expect(datasetApi.delete).toHaveBeenCalledWith(MOCK_DATASETS[0].id)
+    })
+  })
+
+  it('removes the deleted dataset from the list', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    datasetApi.delete.mockResolvedValue({})
+    renderHistory()
+    await waitFor(() => screen.getByText('sales-2024'))
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId(`delete-${MOCK_DATASETS[0].id}`))
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByText('sales-2024')).not.toBeInTheDocument()
+      expect(screen.getByText('marketing-q1')).toBeInTheDocument()
+    })
+  })
+
+  it('shows a success toast after deleting', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    datasetApi.delete.mockResolvedValue({})
+    renderHistory()
+    await waitFor(() => screen.getAllByText('Use'))
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId(`delete-${MOCK_DATASETS[0].id}`))
+    })
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(`Deleted "${MOCK_DATASETS[0].name}"`)
+    })
+  })
+
+  it('shows an error toast when delete fails', async () => {
+    datasetApi.history.mockResolvedValue({ data: MOCK_DATASETS })
+    datasetApi.delete.mockRejectedValue(new Error('server error'))
+    renderHistory()
+    await waitFor(() => screen.getAllByText('Use'))
+
+    await act(async () => {
+      await userEvent.click(screen.getByTestId(`delete-${MOCK_DATASETS[0].id}`))
+    })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Could not delete dataset')
     })
   })
 })
