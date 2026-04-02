@@ -255,8 +255,7 @@ jobs:
               --memory-size 1024 \
               --region $REGION \
               --description "AI Connoisseur API v${{ needs.version.outputs.version }}" \
-              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}" \
-              --vpc-config "SubnetIds=subnet-0f5698acf70fb4e7a,subnet-075b43bf46ddc0259,subnet-01c1232a8ba43ba28,SecurityGroupIds=sg-0154c0e296fe97958"
+              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}"
             aws lambda wait function-active \
               --function-name $LAMBDA_NAME --region $REGION
           else
@@ -270,8 +269,7 @@ jobs:
             aws lambda update-function-configuration \
               --function-name $LAMBDA_NAME \
               --region $REGION \
-              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}" \
-              --vpc-config "SubnetIds=subnet-0f5698acf70fb4e7a,subnet-075b43bf46ddc0259,subnet-01c1232a8ba43ba28,SecurityGroupIds=sg-0154c0e296fe97958"
+              --environment "Variables={ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},MODEL_ARTEFACT_DIR=/tmp/artefacts,S3_BUCKET_NAME=${{ secrets.S3_ARTEFACT_BUCKET }},LOG_LEVEL=INFO}"
             aws lambda wait function-updated \
               --function-name $LAMBDA_NAME --region $REGION
           fi
