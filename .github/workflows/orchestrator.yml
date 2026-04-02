@@ -52,6 +52,58 @@ jobs:
               - 'simplydigitals-aiconnoisseur-ui/**'
               - '!simplydigitals-aiconnoisseur-ui/**.md'
 
+  # ── Validate required secrets — runs on pull request ───────────────────────
+  validate-secrets:
+    name: Validate Required Secrets
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check API secrets
+        env:
+          AWS_ACCESS_KEY_ID:    ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCOUNT_ID:       ${{ secrets.AWS_ACCOUNT_ID }}
+          ECR_REPOSITORY:       ${{ secrets.ECR_REPOSITORY }}
+          LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+          LAMBDA_ROLE_ARN:      ${{ secrets.LAMBDA_ROLE_ARN }}
+          DATABASE_URL:         ${{ secrets.DATABASE_URL }}
+          SECRET_KEY:           ${{ secrets.SECRET_KEY }}
+          S3_ARTEFACT_BUCKET:   ${{ secrets.S3_ARTEFACT_BUCKET }}
+        run: |
+          missing=()
+          [ -z "$AWS_ACCESS_KEY_ID" ]    && missing+=("AWS_ACCESS_KEY_ID")
+          [ -z "$AWS_SECRET_ACCESS_KEY" ] && missing+=("AWS_SECRET_ACCESS_KEY")
+          [ -z "$AWS_ACCOUNT_ID" ]       && missing+=("AWS_ACCOUNT_ID")
+          [ -z "$ECR_REPOSITORY" ]       && missing+=("ECR_REPOSITORY")
+          [ -z "$LAMBDA_FUNCTION_NAME" ] && missing+=("LAMBDA_FUNCTION_NAME")
+          [ -z "$LAMBDA_ROLE_ARN" ]      && missing+=("LAMBDA_ROLE_ARN")
+          [ -z "$DATABASE_URL" ]         && missing+=("DATABASE_URL")
+          [ -z "$SECRET_KEY" ]           && missing+=("SECRET_KEY")
+          [ -z "$S3_ARTEFACT_BUCKET" ]   && missing+=("S3_ARTEFACT_BUCKET")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "❌ Missing required API secrets: ${missing[*]}"
+            exit 1
+          fi
+          echo "✅ All required API secrets are present"
+
+      - name: Check UI secrets
+        env:
+          S3_UI_BUCKET:               ${{ secrets.S3_UI_BUCKET }}
+          PROD_API_URL:               ${{ secrets.PROD_API_URL }}
+          VITE_GOOGLE_CLIENT_ID:      ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          missing=()
+          [ -z "$S3_UI_BUCKET" ]               && missing+=("S3_UI_BUCKET")
+          [ -z "$PROD_API_URL" ]               && missing+=("PROD_API_URL")
+          [ -z "$VITE_GOOGLE_CLIENT_ID" ]      && missing+=("VITE_GOOGLE_CLIENT_ID")
+          [ -z "$CLOUDFRONT_DISTRIBUTION_ID" ] && missing+=("CLOUDFRONT_DISTRIBUTION_ID")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "❌ Missing required UI secrets: ${missing[*]}"
+            exit 1
+          fi
+          echo "✅ All required UI secrets are present"
+
   # ── API Pipeline ────────────────────────────────────────────────────────────
   api:
     name: API Pipeline
@@ -120,21 +172,23 @@ jobs:
   summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [detect, api, ui]
+    needs: [detect, validate-secrets, api, ui]
     if: always() && github.event_name == 'pull_request'
     steps:
       - name: Post PR comment
         uses: actions/github-script@v7
         with:
           script: |
-            const apiChanged = '${{ needs.detect.outputs.api }}' === 'true'
-            const uiChanged  = '${{ needs.detect.outputs.ui }}'  === 'true'
-            const apiResult  = '${{ needs.api.result }}'
-            const uiResult   = '${{ needs.ui.result }}'
-            const sha        = '${{ github.event.pull_request.head.sha }}'.slice(0, 7)
-            const runUrl     = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            const apiChanged      = '${{ needs.detect.outputs.api }}' === 'true'
+            const uiChanged       = '${{ needs.detect.outputs.ui }}'  === 'true'
+            const secretsResult   = '${{ needs.validate-secrets.result }}'
+            const apiResult       = '${{ needs.api.result }}'
+            const uiResult        = '${{ needs.ui.result }}'
+            const sha             = '${{ github.event.pull_request.head.sha }}'.slice(0, 7)
+            const runUrl          = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
             const icon = (r) => r === 'success' ? '✅' : r === 'failure' ? '❌' : r === 'skipped' ? '⏭️' : '⏳'
             const rows = []
+            rows.push(`| Secrets Validation | ${icon(secretsResult)} ${secretsResult} |`)
             if (apiChanged) rows.push(`| API — Tests + Coverage | ${icon(apiResult)} ${apiResult} |`)
             if (uiChanged)  rows.push(`| UI  — Tests + Coverage | ${icon(uiResult)}  ${uiResult}  |`)
             if (!apiChanged && !uiChanged) rows.push(`| No source changes | ⏭️ skipped |`)
