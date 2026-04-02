@@ -5,47 +5,54 @@
 API_TMP="/tmp/.pre-commit-api-pytest.txt"
 UI_TMP="/tmp/.pre-commit-ui-vitest.txt"
 
-echo ""
-echo "┌──────────────────────────────────────────────────────┐"
-echo "│                Pre-Commit Test Results               │"
-echo "├──────────────────────────────────────────────────────┤"
+# Strip ANSI colour codes from a string
+strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
 
-# ── API — pytest ─────────────────────────────────────────────────────────────
+# ── Parse API results ─────────────────────────────────────────────────────────
+API_TESTS="skipped"
+API_COV="—"
 if [ -f "$API_TMP" ]; then
-  # e.g. "45 passed, 2 warnings in 12.34s"
-  PYTEST_LINE=$(grep -E "^[0-9]+ passed" "$API_TMP" | tail -1)
-  # e.g. "TOTAL   1234   234   81%"
-  COV_LINE=$(grep -E "^TOTAL" "$API_TMP" | awk '{print $NF}' | head -1)
-
-  if [ -n "$PYTEST_LINE" ]; then
-    if [ -n "$COV_LINE" ]; then
-      printf "│  %-12s %-28s coverage: %s\n" "API" "$PYTEST_LINE" "$COV_LINE"
-    else
-      printf "│  %-12s %s\n" "API" "$PYTEST_LINE"
-    fi
-  else
-    FAIL_LINE=$(grep -E "failed|error" "$API_TMP" | tail -1)
-    printf "│  %-12s %s\n" "API" "${FAIL_LINE:-no results found}"
-  fi
-else
-  printf "│  %-12s %s\n" "API" "skipped (no Python files changed)"
+  RAW=$(cat "$API_TMP" | strip_ansi)
+  # "==== 106 passed, 11 warnings in 27.29s ===="
+  PYTEST_LINE=$(echo "$RAW" | grep -E "[0-9]+ passed" | tail -1)
+  PASSED=$(echo "$PYTEST_LINE" | grep -oE "[0-9]+ passed")
+  FAILED=$(echo "$PYTEST_LINE" | grep -oE "[0-9]+ failed" || true)
+  DURATION=$(echo "$PYTEST_LINE" | grep -oE "[0-9]+\.[0-9]+s")
+  [ -n "$PASSED" ] && API_TESTS="${PASSED}${FAILED:+, $FAILED} (${DURATION})" || API_TESTS="❌ failed"
+  # "TOTAL  807  126  68  4  81.71%"
+  COV=$(echo "$RAW" | grep -E "^TOTAL" | awk '{print $NF}' | head -1)
+  [ -n "$COV" ] && API_COV="$COV"
 fi
 
-# ── UI — Vitest ───────────────────────────────────────────────────────────────
+# ── Parse UI results ──────────────────────────────────────────────────────────
+UI_TESTS="skipped"
+UI_STMTS="—"
+UI_BRANCH="—"
+UI_FUNCS="—"
+UI_LINES="—"
 if [ -f "$UI_TMP" ]; then
-  # e.g. "      Tests  55 passed (55)"
-  TESTS_LINE=$(grep -E "Tests\s+[0-9]+" "$UI_TMP" | tail -1 | sed 's/^[[:space:]]*//')
-  FILES_LINE=$(grep -E "Test Files\s+[0-9]+" "$UI_TMP" | tail -1 | sed 's/^[[:space:]]*//')
-
-  if [ -n "$TESTS_LINE" ]; then
-    printf "│  %-12s %-28s %s\n" "UI" "$TESTS_LINE" "$FILES_LINE"
-  else
-    FAIL_LINE=$(grep -iE "failed|error" "$UI_TMP" | tail -1 | sed 's/^[[:space:]]*//')
-    printf "│  %-12s %s\n" "UI" "${FAIL_LINE:-no results found}"
+  RAW=$(cat "$UI_TMP" | strip_ansi)
+  # "      Tests  55 passed (55)"
+  TESTS_LINE=$(echo "$RAW" | grep -E "^\s*Tests\s+[0-9]+" | tail -1 | sed 's/^[[:space:]]*//')
+  [ -n "$TESTS_LINE" ] && UI_TESTS="$TESTS_LINE" || UI_TESTS="❌ failed"
+  # "All files  | 89.53 | 77.35 | 91.89 | 92 |"
+  COV_LINE=$(echo "$RAW" | grep -E "^All files" | head -1)
+  if [ -n "$COV_LINE" ]; then
+    UI_STMTS=$(echo "$COV_LINE" | awk -F'|' '{gsub(/ /,"",$2); printf "%s%%",$2}')
+    UI_BRANCH=$(echo "$COV_LINE" | awk -F'|' '{gsub(/ /,"",$3); printf "%s%%",$3}')
+    UI_FUNCS=$(echo "$COV_LINE"  | awk -F'|' '{gsub(/ /,"",$4); printf "%s%%",$4}')
+    UI_LINES=$(echo "$COV_LINE"  | awk -F'|' '{gsub(/ /,"",$5); printf "%s%%",$5}')
   fi
-else
-  printf "│  %-12s %s\n" "UI" "skipped (no JS/TS files changed)"
 fi
 
-echo "└──────────────────────────────────────────────────────┘"
+# ── Print table ───────────────────────────────────────────────────────────────
+echo ""
+echo "┌───────────┬────────────────────────────────────┬─────────────────────────────────┐"
+echo "│ Component │ Tests                              │ Coverage                        │"
+echo "├───────────┼────────────────────────────────────┼─────────────────────────────────┤"
+printf "│ %-9s │ %-34s │ %-31s │\n" "API" "$API_TESTS" "Statements: $API_COV"
+echo "├───────────┼────────────────────────────────────┼─────────────────────────────────┤"
+printf "│ %-9s │ %-34s │ Stmts: %-5s  Branch: %-5s    │\n" "UI" "$UI_TESTS" "$UI_STMTS" "$UI_BRANCH"
+printf "│ %-9s │ %-34s │ Funcs: %-5s  Lines:  %-5s    │\n" "" "" "$UI_FUNCS" "$UI_LINES"
+echo "└───────────┴────────────────────────────────────┴─────────────────────────────────┘"
 echo ""
