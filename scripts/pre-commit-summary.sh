@@ -62,6 +62,9 @@ API_HTML="simplydigitals-aiconnoisseur-api/htmlcov/index.html"
 UI_HTML="simplydigitals-aiconnoisseur-ui/coverage/index.html"
 
 OPENED=0
+if [ -f "$API_TMP" ] && [ -f "$API_HTML" ]; then
+  open "$API_HTML" 2>/dev/null && OPENED=1
+fi
 if [ -f "$UI_TMP" ] && [ -f "$UI_HTML" ]; then
   open "$UI_HTML" 2>/dev/null && OPENED=1
 fi
