@@ -88,21 +88,20 @@ jobs:
 
       - name: Check UI secrets
         env:
-          S3_UI_BUCKET:               ${{ secrets.S3_UI_BUCKET }}
-          PROD_API_URL:               ${{ secrets.PROD_API_URL }}
-          VITE_GOOGLE_CLIENT_ID:      ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
-          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          S3_UI_BUCKET:          ${{ secrets.S3_UI_BUCKET }}
+          PROD_API_URL:          ${{ secrets.PROD_API_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: |
           missing=()
-          [ -z "$S3_UI_BUCKET" ]               && missing+=("S3_UI_BUCKET")
-          [ -z "$PROD_API_URL" ]               && missing+=("PROD_API_URL")
-          [ -z "$VITE_GOOGLE_CLIENT_ID" ]      && missing+=("VITE_GOOGLE_CLIENT_ID")
-          [ -z "$CLOUDFRONT_DISTRIBUTION_ID" ] && missing+=("CLOUDFRONT_DISTRIBUTION_ID")
+          [ -z "$S3_UI_BUCKET" ]          && missing+=("S3_UI_BUCKET")
+          [ -z "$PROD_API_URL" ]          && missing+=("PROD_API_URL")
+          [ -z "$VITE_GOOGLE_CLIENT_ID" ] && missing+=("VITE_GOOGLE_CLIENT_ID")
           if [ ${#missing[@]} -gt 0 ]; then
             echo "❌ Missing required UI secrets: ${missing[*]}"
             exit 1
           fi
           echo "✅ All required UI secrets are present"
+          echo "ℹ️  CLOUDFRONT_DISTRIBUTION_ID is optional (deploy skips invalidation if absent)"
 
   # ── API Pipeline ────────────────────────────────────────────────────────────
   api:
