@@ -144,7 +144,7 @@ describe('LoginPage', () => {
     })
   })
 
-  it('stores token and navigates to / on successful Google login', async () => {
+  it('stores token and navigates to /dashboard on successful Google login', async () => {
     authApi.googleLogin.mockResolvedValue({ data: { access_token: 'google-tok' } })
     renderLogin()
 
@@ -154,7 +154,7 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(mockSetToken).toHaveBeenCalledWith('google-tok')
-      expect(mockNavigate).toHaveBeenCalledWith('/')
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard')
     })
   })
 
